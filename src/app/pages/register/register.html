@@ -1,0 +1,14 @@
+<form [formGroup]="registerForm" (ngSubmit)="register()">
+  <input type="text" formControlName="userName" placeholder="Användarnamn" />
+  <input type="email" formControlName="email" placeholder="Email" />
+  <input type="password" formControlName="password" placeholder="Lösenord" />
+
+  <button type="submit">Registrera</button>
+
+  <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
+</form>
+
+<div>
+  <a routerLink="/login">Tillbaka till login</a>
+</div>
+
