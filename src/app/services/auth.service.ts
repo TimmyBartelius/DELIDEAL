@@ -30,7 +30,7 @@ login(username: string, password: string): Observable<any> {
     localStorage.removeItem('token');
   }
 
-  isLoggedIn(): boolean {
+  get isLoggedIn(): boolean {
     return !!localStorage.getItem('token');
   }
 

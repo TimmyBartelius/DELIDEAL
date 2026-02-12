@@ -1,0 +1,81 @@
+.home-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  justify-content: space-between;
+  align-items: center;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background-color: #ffffff;
+}
+
+/* Header */
+header {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+  background-color: #4caf50; /* matcha färg från Figma */
+}
+
+.logo {
+  width: 100px;
+  margin-bottom: 15px;
+}
+
+.search-bar input {
+  padding: 10px;
+  width: 250px;
+  font-size: 16px;
+}
+
+.search-bar button {
+  padding: 10px 20px;
+  margin-left: 10px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* Main */
+main {
+  margin-top: 50px;
+}
+
+.action-buttons {
+  margin-top: 30px;
+}
+
+.action-buttons button {
+  display: block;
+  width: 200px;
+  margin: 10px auto;
+  padding: 15px;
+  font-size: 18px;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  background-color: #2f4f6f; /* blå knappfärg */
+}
+
+.action-buttons button:nth-child(2) {
+  background-color: #607d8b; /* grå knappfärg */
+}
+
+/* Footer */
+footer {
+  width: 100%;
+  background-color: #4caf50;
+  color: white;
+  padding: 20px 0;
+}
+
+.footer-icons {
+  margin-bottom: 10px;
+}
+
+.footer-icons .icon {
+  margin: 0 10px;
+  font-size: 20px;
+}
