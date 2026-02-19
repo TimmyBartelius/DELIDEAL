@@ -1,7 +1,79 @@
-<div class="dashboard-container">
-  <h1>Välkommen till DeliDeal!</h1>
-  <p>Här kan du börja använda appen som inloggad användare.</p>
+<div class="container-fluid mt-3">
+  <!-- Sökfält -->
+  <div class="row mb-3">
+    <div class="col-12">
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Sök produkter..."
+        [(ngModel)]="searchTerm"
+      />
+    </div>
+  </div>
 
-  <button (click)="logout()"></button>
+  <!-- Huvudlayout -->
+  <div class="row">
+    <!-- Sidomeny -->
+    <div class="col-md-3">
+      <div class="card p-3 mb-3">
+        <!-- Profil -->
+        <div class="text-center mb-3">
+          <img [src]="userProfileImage" alt="Profilbild" class="rounded-circle mb-2" width="80" />
+          <h5>{{ userName }}</h5>
+        </div>
+
+        <!-- Ort -->
+        <div class="mb-3">
+          <label for="location" class="form-label">Din ort</label>
+          <input type="text" id="location" class="form-control" placeholder="Ange ort" />
+        </div>
+
+        <!-- Google Maps placeholder -->
+        <div class="mb-3" style="height: 200px; background-color: #e9ecef">
+          <p class="text-center mt-5">Google Maps</p>
+        </div>
+
+        <!-- Slider -->
+        <div class="mb-3">
+          <label for="radius" class="form-label">Radie (km)</label>
+          <input
+            type="range"
+            class="form-range"
+            min="0"
+            max="50"
+            [(ngModel)]="radius"
+            id="radius"
+          />
+          <p>{{ radius }} km</p>
+        </div>
+
+        <!-- Checkboxes -->
+        <div class="mb-3">
+          <label class="form-label">Produktkategorier</label>
+          <div *ngFor="let category of categories" class="form-check">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              [id]="category.category"
+              [(ngModel)]="category.selected"
+            />
+            <label class="form-check-label" [for]="category.category">{{
+              category.category
+            }}</label>
+          </div>
+        </div>
+
+        <!-- Logout-knapp -->
+        <button class="btn btn-danger w-100 mt-3" (click)="logout()">Logga ut</button>
+      </div>
+    </div>
+
+    <!-- Huvudinnehåll -->
+    <div class="col-md-9">
+      <div class="card p-3">
+        <h2>Välkommen till DeliDeal!</h2>
+        <p>Här kan du börja använda appen som inloggad användare.</p>
+      </div>
+    </div>
+  </div>
 </div>
-

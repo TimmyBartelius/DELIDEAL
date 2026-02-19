@@ -1,14 +1,78 @@
-<form [formGroup]="registerForm" (ngSubmit)="register()">
-  <input type="text" formControlName="userName" placeholder="Användarnamn" />
-  <input type="email" formControlName="email" placeholder="Email" />
-  <input type="password" formControlName="password" placeholder="Lösenord" />
+<div class="d-flex flex-column vh-100 bg-light">
+  <main class="flex-fill d-flex flex-column justify-content-center align-items-center">
+    <div class="card shadow p-4" style="max-width: 400px; width: 100%">
+      <h2 class="text-center mb-4">Skapa konto</h2>
 
-  <button type="submit">Registrera</button>
+      <!-- Felmeddelande -->
+      <div *ngIf="errorMessage" class="alert alert-danger">
+        {{ errorMessage }}
+      </div>
 
-  <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
-</form>
+      <form [formGroup]="registerForm" (ngSubmit)="register()">
+        <!-- Användarnamn -->
+        <div class="mb-3">
+          <label for="userName" class="form-label">Användarnamn</label>
+          <input
+            id="userName"
+            type="text"
+            class="form-control"
+            formControlName="userName"
+            placeholder="Användarnamn"
+          />
+          <div
+            *ngIf="registerForm.get('userName')?.touched && registerForm.get('userName')?.invalid"
+            class="text-danger small mt-1"
+          >
+            Användarnamn krävs
+          </div>
+        </div>
 
-<div>
-  <a routerLink="/login">Tillbaka till login</a>
+        <!-- Email -->
+        <div class="mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input
+            id="email"
+            type="email"
+            class="form-control"
+            formControlName="emailAddress"
+            placeholder="Email"
+          />
+          <div
+            *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.invalid"
+            class="text-danger small mt-1"
+          >
+            Ange en giltig email
+          </div>
+        </div>
+
+        <!-- Lösenord -->
+        <div class="mb-3">
+          <label for="password" class="form-label">Lösenord</label>
+          <input
+            id="password"
+            type="password"
+            class="form-control"
+            formControlName="password"
+            placeholder="Lösenord"
+          />
+          <div
+            *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.invalid"
+            class="text-danger small mt-1"
+          >
+            Lösenord krävs
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="btn btn-success w-100" [disabled]="registerForm.invalid">
+          Registrera
+        </button>
+      </form>
+
+      <div class="text-center mt-3">
+        <span>Har du redan ett konto?</span>
+        <a routerLink="/login">Logga in här</a>
+      </div>
+    </div>
+  </main>
 </div>
-

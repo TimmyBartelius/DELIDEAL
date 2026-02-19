@@ -17,7 +17,7 @@ export class LoginComponent {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
   ) {
     this.loginForm = this.fb.group({
       username: ['', Validators.required],
@@ -25,6 +25,7 @@ export class LoginComponent {
     });
   }
   onSubmit(): void {
+    console.log('onSubmit triggered', this.loginForm.value);
     this.errorMessage = null;
 
     if (this.loginForm.valid) {
@@ -33,8 +34,8 @@ export class LoginComponent {
       this.authService.login(username, password).subscribe({
         next: (res) => {
           console.log('Login successful!', res);
-          
-          this.router.navigate(['/dashboard']); 
+
+          this.router.navigate(['/dashboard']);
         },
         error: (err) => {
           console.error('Login failed', err);

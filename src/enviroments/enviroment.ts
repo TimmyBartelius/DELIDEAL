@@ -7,20 +7,20 @@ export const environment: Environment = {
   application: {
     baseUrl,
     name: 'MyApp',
-    logoUrl: ''
+    logoUrl: '',
   },
   oAuthConfig: {
-    issuer: 'http://localhost:5000',
+    issuer: 'https://localhost:5001',
     redirectUri: baseUrl,
     clientId: 'MyApp_App',
     responseType: 'code',
     scope: 'offline_access MyApp',
-    requireHttps: false
+    requireHttps: false,
   },
   apis: {
     default: {
-      url: 'http://localhost:5000',
-      rootNamespace: 'MyApp'
-    }
-  }
+      url: 'https://localhost:5001',
+      rootNamespace: 'MyApp',
+    },
+  },
 };
