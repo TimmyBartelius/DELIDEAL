@@ -43,7 +43,9 @@ export class UserService {
 
   /** Hämtar profilbild */
   getProfilePicture() {
-    return this.http.get<{ base64: string }>(`${this.ACCOUNT_URL}/account/profile-picture`);
+    return this.http.get<{ base64: string }>(`${this.ACCOUNT_URL}/profile-picture`, {
+      headers: this.getAuthHeaders(),
+    });
   }
 
   /** Spara ny profilbild (Base64) */
