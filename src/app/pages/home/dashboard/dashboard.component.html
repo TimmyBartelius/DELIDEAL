@@ -18,7 +18,22 @@
       <div class="card p-3 mb-3">
         <!-- Profil -->
         <div class="text-center mb-3">
-          <img [src]="userProfileImage" alt="Profilbild" class="rounded-circle mb-2" width="80" />
+          <img
+            [src]="userProfileImage"
+            alt="Profilbild"
+            class="rounded-circle mb-2"
+            width="80"
+            height="80"
+            style="cursor: pointer"
+            (click)="fileInput.click()"
+          />
+          <input
+            #fileInput
+            type="file"
+            accept="image/*"
+            style="display: none"
+            (change)="onProfileImageSelected($event)"
+          />
           <h5>{{ userName }}</h5>
         </div>
 

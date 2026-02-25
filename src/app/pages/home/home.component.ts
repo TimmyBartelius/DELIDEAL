@@ -9,19 +9,19 @@ import { Router } from '@angular/router';
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
   standalone: true,
-  imports: [FormsModule, CommonModule]
+  imports: [FormsModule, CommonModule],
 })
 export class HomeComponent {
   searchQuery: string = '';
 
-  constructor(private router: Router, public auth: AuthService) {}
+  constructor(
+    private router: Router,
+    public auth: AuthService,
+  ) {}
 
-  // Körs när användaren trycker på sök
-  onSearch() {
-    if (this.searchQuery.trim()) {
-      console.log('Söker efter:', this.searchQuery);
-      // Här kan du navigera till sökresultatsidan eller göra API-anrop
-      // Exempel: this.router.navigate(['/search'], { queryParams: { q: this.searchQuery } });
+  ngOnInit(): void {
+    if (this.auth.isLoggedIn) {
+      this.router.navigate(['/dashboard']);
     }
   }
 

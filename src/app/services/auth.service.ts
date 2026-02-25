@@ -1,35 +1,29 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { map, Observable, tap } from 'rxjs';
 import { environment } from '../../enviroments/enviroment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  // HTTPS-adress till backend
   private readonly API_BASE = `${environment.apis.default.url}/api`;
   private readonly ACCOUNT_URL = `${this.API_BASE}/account`;
   private readonly TOKEN_KEY = 'access_token';
 
   constructor(private http: HttpClient) {}
 
-  login(username: string, password: string): Observable<any> {
-    const body = new URLSearchParams();
-    body.set('grant_type', 'password');
-    body.set('username', username);
-    body.set('password', password);
-    body.set('client_id', environment.oAuthConfig.clientId);
-    body.set('scope', environment.oAuthConfig.scope);
-
-    return this.http
-      .post<any>(`${environment.oAuthConfig.issuer}/connect/token`, body.toString(), {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      })
-      .pipe(tap((res) => localStorage.setItem(this.TOKEN_KEY, res.access_token)));
+  // --- LOGIN ---
+  login(email: string, password: string): Observable<any> {
+    return this.http.post(`${this.API_BASE}/auth/login`, { email, password }).pipe(
+      tap((res: any) => {
+        localStorage.setItem(this.TOKEN_KEY, res.token);
+      }),
+    );
   }
 
-  logout() {
+  // --- LOGOUT ---
+  logout(): void {
     localStorage.removeItem(this.TOKEN_KEY);
   }
 
@@ -41,34 +35,42 @@ export class AuthService {
     return localStorage.getItem(this.TOKEN_KEY);
   }
 
-  register(data: any): Observable<any> {
-    return this.http.post(`${this.ACCOUNT_URL}/register`, {
-      userName: data.userName,
-      emailAddress: data.emailAddress,
-      password: data.password,
-      appName: environment.application.name,
+  // --- REGISTER ---
+  register(data: { userName: string; email: string; password: string }): Observable<any> {
+    return this.http
+      .post(`${this.API_BASE}/auth/register`, {
+        userName: data.userName,
+        email: data.email,
+        password: data.password,
+      })
+      .pipe(
+        tap((res: any) => {
+          localStorage.setItem(this.TOKEN_KEY, res.token);
+        }),
+      );
+  }
+
+  // --- PROFILE ---
+  getMyProfile() {
+    return this.http.get(`${this.API_BASE}/account/my-profile`, {
+      headers: new HttpHeaders({
+        Authorization: `Bearer ${this.getAccessToken()}`,
+      }),
     });
   }
 
-  getMyProfile(): Observable<any> {
-    const token = this.getAccessToken();
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-    });
-    return this.http.get(`${this.ACCOUNT_URL}/my-profile`, { headers });
+  getProfilePicture() {
+    return this.http
+      .get(`${this.API_BASE}/account/profile-picture`, {
+        headers: {
+          Authorization: `Bearer ${this.getAccessToken()}`,
+        },
+        responseType: 'blob',
+      })
+      .pipe(map((blob) => URL.createObjectURL(blob)));
   }
 
-  changePassword(currentPassword: string, newPassword: string): Observable<any> {
-    const token = this.getAccessToken();
-    return this.http.post(
-      `${this.ACCOUNT_URL}/my-profile/change-password`,
-      {
-        currentPassword,
-        newPassword,
-      },
-      {
-        headers: token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined,
-      },
-    );
+  saveProfilePicture(base64: string): Observable<any> {
+    return this.http.put(`${this.ACCOUNT_URL}/profile-picture`, JSON.stringify(base64));
   }
 }

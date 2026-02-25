@@ -14,7 +14,7 @@ export const environment: Environment = {
     redirectUri: baseUrl,
     clientId: 'MyApp_App',
     responseType: 'code',
-    scope: 'offline_access MyApp',
+    scope: 'openid profile offline_access MyApp',
     requireHttps: false,
   },
   apis: {

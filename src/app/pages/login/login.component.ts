@@ -20,7 +20,7 @@ export class LoginComponent {
     private router: Router,
   ) {
     this.loginForm = this.fb.group({
-      username: ['', Validators.required],
+      email: ['', Validators.required],
       password: ['', Validators.required],
     });
   }
@@ -29,9 +29,9 @@ export class LoginComponent {
     this.errorMessage = null;
 
     if (this.loginForm.valid) {
-      const { username, password } = this.loginForm.value;
+      const { email, password } = this.loginForm.value;
 
-      this.authService.login(username, password).subscribe({
+      this.authService.login(email, password).subscribe({
         next: (res) => {
           console.log('Login successful!', res);
 
@@ -39,7 +39,9 @@ export class LoginComponent {
         },
         error: (err) => {
           console.error('Login failed', err);
-          this.errorMessage = 'Login misslyckades. Kontrollera användarnamn och lösenord.';
+          this.errorMessage =
+            err.error?.error_description ||
+            'Login misslyckades. Kontrollera användarnamn och lösenord.';
         },
       });
     } else {

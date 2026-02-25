@@ -11,19 +11,19 @@
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
         <!-- Användarnamn -->
         <div class="mb-3">
-          <label for="username" class="form-label">Användarnamn</label>
+          <label for="email" class="form-label">Email</label>
           <input
-            id="username"
-            type="text"
+            id="email"
+            type="email"
             class="form-control"
-            formControlName="username"
-            placeholder="Skriv ditt användarnamn"
+            formControlName="email"
+            placeholder="Skriv din email"
           />
           <div
-            *ngIf="loginForm.get('username')?.touched && loginForm.get('username')?.invalid"
+            *ngIf="loginForm.get('email')?.touched && loginForm.get('email')?.invalid"
             class="text-danger small mt-1"
           >
-            Användarnamn krävs
+            Email krävs
           </div>
         </div>
 
