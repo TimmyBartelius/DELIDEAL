@@ -34,9 +34,8 @@ export class RegisterComponent {
     }
     const registerDto = {
       userName: this.registerForm.value.userName,
-      emailAddress: this.registerForm.value.emailAddress,
+      email: this.registerForm.value.emailAddress,
       password: this.registerForm.value.password,
-      appName: 'MyApp_App',
     };
 
     this.authService.register(registerDto).subscribe({

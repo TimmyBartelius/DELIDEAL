@@ -3,6 +3,12 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { map, Observable, tap } from 'rxjs';
 import { environment } from '../../enviroments/enviroment';
 
+export interface AuthResponse {
+  token: string;
+  userId: string;
+  userName: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -15,8 +21,8 @@ export class AuthService {
 
   // --- LOGIN ---
   login(email: string, password: string): Observable<any> {
-    return this.http.post(`${this.API_BASE}/auth/login`, { email, password }).pipe(
-      tap((res: any) => {
+    return this.http.post<AuthResponse>(`${this.API_BASE}/auth/login`, { email, password }).pipe(
+      tap((res) => {
         localStorage.setItem(this.TOKEN_KEY, res.token);
       }),
     );
@@ -36,18 +42,12 @@ export class AuthService {
   }
 
   // --- REGISTER ---
-  register(data: { userName: string; email: string; password: string }): Observable<any> {
-    return this.http
-      .post(`${this.API_BASE}/auth/register`, {
-        userName: data.userName,
-        email: data.email,
-        password: data.password,
-      })
-      .pipe(
-        tap((res: any) => {
-          localStorage.setItem(this.TOKEN_KEY, res.token);
-        }),
-      );
+  register(data: { userName: string; email: string; password: string }): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.API_BASE}/auth/register`, data).pipe(
+      tap((res) => {
+        localStorage.setItem(this.TOKEN_KEY, res.token);
+      }),
+    );
   }
 
   // --- PROFILE ---
@@ -71,6 +71,11 @@ export class AuthService {
   }
 
   saveProfilePicture(base64: string): Observable<any> {
-    return this.http.put(`${this.ACCOUNT_URL}/profile-picture`, JSON.stringify(base64));
+    return this.http.put(`${this.ACCOUNT_URL}/profile-picture`, JSON.stringify(base64), {
+      headers: new HttpHeaders({
+        Authorization: `Bearer ${this.getAccessToken()}`,
+        'Content-Type': 'application/json',
+      }),
+    });
   }
 }
