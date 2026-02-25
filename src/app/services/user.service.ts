@@ -42,13 +42,8 @@ export class UserService {
   }
 
   /** Hämtar profilbild */
-  getProfilePicture(): Observable<string> {
-    return this.http
-      .get(`${this.ACCOUNT_URL}/profile-picture`, {
-        headers: this.getAuthHeaders(),
-        responseType: 'blob',
-      })
-      .pipe(map((blob) => URL.createObjectURL(blob))); // returnerar URL-string direkt
+  getProfilePicture() {
+    return this.http.get<{ base64: string }>(`${this.ACCOUNT_URL}/account/profile-picture`);
   }
 
   /** Spara ny profilbild (Base64) */

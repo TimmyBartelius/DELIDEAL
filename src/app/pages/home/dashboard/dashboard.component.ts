@@ -45,8 +45,8 @@ export class DashboardComponent implements OnInit {
 
     // --- Ladda profilbild ---
     this.userService.getProfilePicture().subscribe({
-      next: (url) => {
-        this.userProfileImage = url;
+      next: (res) => {
+        this.userProfileImage = `data:image/png;base64,${res.base64}`;
         this.cd.detectChanges();
       },
       error: () => {
