@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from './auth.service';
 import { Observable, map } from 'rxjs';
-import { environment } from '../../enviroments/enviroment';
+import { environment } from '../../enviroments/environment';
 
 export interface UserProfile {
   id: string;

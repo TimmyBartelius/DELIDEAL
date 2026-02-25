@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { map, Observable, tap } from 'rxjs';
-import { environment } from '../../enviroments/enviroment';
+import { environment } from '../../enviroments/environment';
 
 export interface AuthResponse {
   token: string;

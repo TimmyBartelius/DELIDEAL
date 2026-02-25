@@ -40,12 +40,19 @@
         <!-- Ort -->
         <div class="mb-3">
           <label for="location" class="form-label">Din ort</label>
-          <input type="text" id="location" class="form-control" placeholder="Ange ort" />
+          <input
+            type="text"
+            id="location"
+            #locationInput
+            class="form-control"
+            placeholder="Ange ort"
+          />
+          <button class="btn btn-primary mt-2 w-100" (click)="searchCity()">Sök stad</button>
         </div>
 
         <!-- Google Maps placeholder -->
-        <div class="mb-3" style="height: 200px; background-color: #e9ecef">
-          <p class="text-center mt-5">Google Maps</p>
+        <div class="mb-3">
+          <div id="map" style="height: 300px; width: 100%; border: 1px solid #ced4da"></div>
         </div>
 
         <!-- Slider -->
@@ -57,6 +64,7 @@
             min="0"
             max="50"
             [(ngModel)]="radius"
+            (input)="updateRadius()"
             id="radius"
           />
           <p>{{ radius }} km</p>
