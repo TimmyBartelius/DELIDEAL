@@ -21,7 +21,7 @@ export class RegisterComponent {
   ) {
     this.registerForm = this.fb.group({
       userName: ['', Validators.required],
-      emailAddress: ['', [Validators.required, Validators.email]],
+      email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required],
     });
   }
@@ -34,7 +34,7 @@ export class RegisterComponent {
     }
     const registerDto = {
       userName: this.registerForm.value.userName,
-      email: this.registerForm.value.emailAddress,
+      email: this.registerForm.value.email,
       password: this.registerForm.value.password,
     };
 
@@ -49,7 +49,7 @@ export class RegisterComponent {
         // Detta körs om registreringen misslyckas
         console.error(err);
 
-        if (err.statis === 403) {
+        if (err.status === 403) {
           this.errorMessage = 'Registrering tillåts inte - kontrollera serverinställningar.';
         } else if (err.status === 400) {
           this.errorMessage = 'Felaktig data. Kontrollera formuläret.';
