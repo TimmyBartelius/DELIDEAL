@@ -120,7 +120,7 @@ export class DashboardComponent implements OnInit {
     script.defer = true;
     script.async = true;
     script.onload = () => {
-      if ((window as any).initMap) (window as any).initMap();
+      this.initMap();
     };
     document.head.appendChild(script);
   }

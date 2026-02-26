@@ -5,6 +5,7 @@ import { environment } from '../../enviroments/environment';
 
 export interface AuthResponse {
   token: string;
+  refreshToken: string;
   userId: string;
   userName: string;
 }
@@ -16,6 +17,7 @@ export class AuthService {
   private readonly API_BASE = `${environment.apis.default.url}/api`;
   private readonly ACCOUNT_URL = `${this.API_BASE}/account`;
   private readonly TOKEN_KEY = 'access_token';
+  private readonly REFRESH_KEY = 'refresh_token';
 
   constructor(private http: HttpClient) {}
 
@@ -24,13 +26,14 @@ export class AuthService {
     return this.http.post<AuthResponse>(`${this.API_BASE}/auth/login`, { email, password }).pipe(
       tap((res) => {
         localStorage.setItem(this.TOKEN_KEY, res.token);
+        localStorage.setItem(this.REFRESH_KEY, res.refreshToken);
       }),
     );
   }
 
   // --- LOGOUT ---
-  logout(): void {
-    localStorage.removeItem(this.TOKEN_KEY);
+  logout() {
+    localStorage.clear();
   }
 
   get isLoggedIn(): boolean {
@@ -46,25 +49,34 @@ export class AuthService {
     return this.http.post<AuthResponse>(`${this.API_BASE}/auth/register`, data).pipe(
       tap((res) => {
         localStorage.setItem(this.TOKEN_KEY, res.token);
+        localStorage.setItem(this.REFRESH_KEY, res.refreshToken);
       }),
     );
   }
 
+  refreshToken() {
+    const refreshToken = localStorage.getItem(this.REFRESH_KEY);
+    return this.http
+      .post<any>(`${this.API_BASE}/auth/refresh`, JSON.stringify(refreshToken), {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      .pipe(
+        tap((res) => {
+          localStorage.setItem(this.TOKEN_KEY, res.token);
+        }),
+      );
+  }
+
   // --- PROFILE ---
   getMyProfile() {
-    return this.http.get(`${this.API_BASE}/account/my-profile`, {
-      headers: new HttpHeaders({
-        Authorization: `Bearer ${this.getAccessToken()}`,
-      }),
-    });
+    return this.http.get(`${this.API_BASE}/account/my-profile`);
   }
 
   getProfilePicture() {
     return this.http
       .get(`${this.API_BASE}/account/profile-picture`, {
-        headers: {
-          Authorization: `Bearer ${this.getAccessToken()}`,
-        },
         responseType: 'blob',
       })
       .pipe(map((blob) => URL.createObjectURL(blob)));
@@ -72,10 +84,9 @@ export class AuthService {
 
   saveProfilePicture(base64: string): Observable<any> {
     return this.http.put(`${this.ACCOUNT_URL}/profile-picture`, JSON.stringify(base64), {
-      headers: new HttpHeaders({
-        Authorization: `Bearer ${this.getAccessToken()}`,
+      headers: {
         'Content-Type': 'application/json',
-      }),
+      },
     });
   }
 }
