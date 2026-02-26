@@ -251,7 +251,7 @@ export class DashboardComponent implements OnInit {
   /** Logga ut */
   logout() {
     this.auth.logout();
-    this.router.navigate(['/login']);
+    this.router.navigate(['/home']);
   }
 
   // Google Maps-relaterat
