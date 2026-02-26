@@ -30,7 +30,7 @@ export class DashboardComponent implements OnInit {
     {
       name: 'Räkor',
       category: ProductCategory.Seafood,
-      image: '',
+      image: 'assets/shrimp.jpg',
       price: 129,
       stockLevel: 'Mycket kvar',
       specialOffer: true,
@@ -38,7 +38,7 @@ export class DashboardComponent implements OnInit {
     {
       name: 'Kräftor',
       category: ProductCategory.Seafood,
-      image: '',
+      image: 'assets/crawfish.jpg',
       price: 179,
       stockLevel: 'Mellan kvar',
       specialOffer: false,
@@ -46,7 +46,7 @@ export class DashboardComponent implements OnInit {
     {
       name: 'Krabba',
       category: ProductCategory.Seafood,
-      image: '',
+      image: 'assets/crab.jpg',
       price: 199,
       stockLevel: 'Lite kvar',
       specialOffer: true,
@@ -54,7 +54,7 @@ export class DashboardComponent implements OnInit {
     {
       name: 'Lax',
       category: ProductCategory.Fish,
-      image: '',
+      image: 'assets/salmon.jpg',
       price: 99,
       stockLevel: 'Mycket kvar',
       specialOffer: false,
@@ -62,7 +62,7 @@ export class DashboardComponent implements OnInit {
     {
       name: 'Torsk',
       category: ProductCategory.Fish,
-      image: '',
+      image: 'assets/cod.jpg',
       price: 299,
       stockLevel: 'Mycket kvar',
       specialOffer: false,
@@ -70,7 +70,7 @@ export class DashboardComponent implements OnInit {
     {
       name: 'Sej',
       category: ProductCategory.Fish,
-      image: '',
+      image: 'assets/sej.jpg',
       price: 79,
       stockLevel: 'Mellan kvar',
       specialOffer: true,
@@ -78,7 +78,7 @@ export class DashboardComponent implements OnInit {
     {
       name: 'Entrecote',
       category: ProductCategory.Meat,
-      image: '',
+      image: 'assets/entrecote.jpg',
       price: 499,
       stockLevel: 'Lite kvar',
       specialOffer: false,
@@ -86,7 +86,7 @@ export class DashboardComponent implements OnInit {
     {
       name: 'Revben',
       category: ProductCategory.Meat,
-      image: '',
+      image: 'assets/ribs.jpg',
       price: 199,
       stockLevel: 'Lite kvar',
       specialOffer: true,
@@ -94,7 +94,7 @@ export class DashboardComponent implements OnInit {
     {
       name: 'Fransyska',
       category: ProductCategory.Meat,
-      image: '',
+      image: 'assets/fransyska.jpg',
       price: 299,
       stockLevel: 'Mellan kvar',
       specialOffer: false,
@@ -102,7 +102,7 @@ export class DashboardComponent implements OnInit {
     {
       name: 'Mögelost',
       category: ProductCategory.Cheese,
-      image: '',
+      image: 'assets/moldcheese.jpg',
       price: 19,
       stockLevel: 'Lite kvar',
       specialOffer: false,
@@ -110,7 +110,7 @@ export class DashboardComponent implements OnInit {
     {
       name: 'Mjukost',
       category: ProductCategory.Cheese,
-      image: '',
+      image: 'assets/softcheese.jpg',
       price: 9,
       stockLevel: 'Mellan kvar',
       specialOffer: false,
@@ -118,7 +118,7 @@ export class DashboardComponent implements OnInit {
     {
       name: 'Hårdost',
       category: ProductCategory.Cheese,
-      image: '',
+      image: 'assets/hardcheese.jpg',
       price: 49,
       stockLevel: 'Lite kvar',
       specialOffer: true,
