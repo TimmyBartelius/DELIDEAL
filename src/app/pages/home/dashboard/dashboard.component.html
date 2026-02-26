@@ -39,7 +39,7 @@
         </div>
 
         <!-- Ort -->
-        <div class="mb-3">
+        <!-- <div class="mb-3">
           <label for="location" class="form-label">Din ort</label>
           <input
             type="text"
@@ -49,11 +49,13 @@
             placeholder="Ange ort"
           />
           <button class="btn btn-primary mt-2 w-100" (click)="searchCity()">Sök stad</button>
-        </div>
+        </div> -->
+        <!-- TODO: UTVÄRDERA OM DET ÄR VÄRT ATT HA ORT ELLER EJ -->
 
         <!-- Google Maps placeholder -->
         <div class="mb-3">
-          <div id="map" style="height: 300px; width: 100%; border: 1px solid #ced4da"></div>
+          <app-map [radius]="radius"></app-map>
+          <!-- radius från slidern -->
         </div>
 
         <!-- Slider -->
@@ -62,8 +64,8 @@
           <input
             type="range"
             class="form-range"
-            min="0"
-            max="50"
+            min="1"
+            max="5"
             [(ngModel)]="radius"
             (input)="updateRadius()"
             id="radius"
@@ -125,7 +127,7 @@
             </p>
             <!-- Lagerstatus -->
             <p class="mb-0">
-              <small class="text-muted"> {{ product.stockLevel | titlecase }} kvar </small>
+              <small class="text-muted"> {{ product?.stockLevel | titlecase }} kvar </small>
             </p>
             <p class="text-muted">{{ product.category }}</p>
           </div>

@@ -6,24 +6,17 @@ import { FormsModule } from '@angular/forms';
 import { ProductCategory } from '../../../../enums/product-category.enum';
 import { UserService } from '../../../services/user.service';
 import { FilterByNamePipe } from '../../../shared/filter-by-name.pipe';
+import { MapComponent } from '../../../shared/map/map.component';
+import { Product } from '../../../shared/models/product.model';
 
 declare var google: any;
-
-interface Product {
-  name: string;
-  category: ProductCategory;
-  image: string;
-  price: number;
-  stockLevel: 'Lite kvar' | 'Mellan kvar' | 'Mycket kvar';
-  specialOffer: boolean;
-}
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: `dashboard.component.html`,
   styleUrls: ['dashboard.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, FilterByNamePipe],
+  imports: [CommonModule, FormsModule, FilterByNamePipe, MapComponent],
 })
 export class DashboardComponent implements OnInit {
   // MOCK PRODUCTS //
@@ -125,7 +118,7 @@ export class DashboardComponent implements OnInit {
       specialOffer: true,
     },
   ];
-  filteredProducts: Product[] = [];
+  filteredProducts: Product[] = [] as Product[];
   searchTerm: string = '';
   categories: { category: ProductCategory; selected: boolean }[] = [];
   ///////////////////////////////////////////////////////
@@ -137,7 +130,7 @@ export class DashboardComponent implements OnInit {
 
   userName: string = '';
   userProfileImage: string = 'assets/logo.png';
-  radius: number = 10;
+  radius: number = 1;
 
   constructor(
     private userService: UserService,
@@ -268,7 +261,7 @@ export class DashboardComponent implements OnInit {
       return;
     }
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyD2SuMGC6eoAsofz21EvyubGsm7rDu22IE`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyD2SuMGC6eoAsofz21EvyubGsm7rDu22IE&callback=initMap`;
     script.defer = true;
     script.async = true;
     script.onload = () => this.initMap();
@@ -291,7 +284,7 @@ export class DashboardComponent implements OnInit {
       fillOpacity: 0.2,
       map: this.map,
       center: { lat, lng },
-      radius: this.radius * 1000,
+      radius: this.radius,
     });
 
     this.map.setCenter({ lat, lng });
@@ -317,7 +310,7 @@ export class DashboardComponent implements OnInit {
   }
 
   updateRadius() {
-    if (this.circle) this.circle.setRadius(this.radius * 1000);
+    if (this.circle) this.circle.setRadius(this.radius);
   }
 
   loadCategories() {

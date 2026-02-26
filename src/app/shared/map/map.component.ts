@@ -1,61 +1,49 @@
-import {
-  ChangeDetectorRef,
-  Component,
-  OnInit,
-  AfterViewInit,
-  ViewChild,
-  ElementRef,
-} from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '../../../app/services/auth.service';
-import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { ProductCategory } from '../../../../src/enums/product-category.enum';
-import { UserService } from '../../../app/services/user.service';
 
 declare var google: any;
 
 @Component({
-  selector: 'app-dashboard',
+  selector: 'app-map',
   templateUrl: `./map.component.html`,
   standalone: true,
   imports: [CommonModule, FormsModule],
 })
-export class DashboardComponent implements OnInit, AfterViewInit {
+export class MapComponent implements OnInit, AfterViewInit {
   @ViewChild('locationInput') locationInput!: ElementRef;
 
   apiKey = 'AIzaSyD2SuMGC6eoAsofz21EvyubGsm7rDu22IE';
-
-  searchTerm: string = '';
-  userName: string = '';
-  userProfileImage: string = 'assets/logo.png';
-  radius: number = 10;
-  categories: { category: ProductCategory; selected: boolean }[] = [];
 
   // Google Maps
   map: any;
   circle: any;
   defaultCoords = { lat: 57.7089, lng: 11.9746 }; // Göteborg fallback
 
-  constructor(
-    private userService: UserService,
-    private auth: AuthService,
-    private router: Router,
-    private cd: ChangeDetectorRef,
-  ) {}
+  private _radius: number = 10;
 
-  ngOnInit(): void {
-    this.loadUserProfile();
-    this.loadCategories();
+  @Input()
+  set radius(value: number) {
+    this._radius = value;
+    if (this.circle) {
+      this.circle.setRadius(this._radius * 1000);
+    }
   }
 
+  get radius(): number {
+    return this._radius;
+  }
+
+  constructor() {}
+
+  ngOnInit(): void {}
+
   ngAfterViewInit(): void {
-    // Kontrollera att google.maps finns
     const waitForGoogle = () => {
       if ((window as any)['google'] && (window as any)['google'].maps) {
-        this.initMap(this.defaultCoords.lat, this.defaultCoords.lng);
+        this.useCurrentPositionOnInit();
       } else {
-        setTimeout(waitForGoogle, 100); // prova igen om 100ms
+        setTimeout(waitForGoogle, 100);
       }
     };
     waitForGoogle();
@@ -74,14 +62,20 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     if (this.circle) this.circle.setMap(null);
 
     this.circle = new google.maps.Circle({
-      strokeColor: '#FF0000',
+      strokeColor: '#28a745',
       strokeOpacity: 0.8,
       strokeWeight: 2,
-      fillColor: '#FF0000',
+      fillColor: '#28a754',
       fillOpacity: 0.2,
       map: this.map,
       center: { lat, lng },
-      radius: this.radius * 1000, // km → meter
+      radius: this.radius * 1000,
+    });
+
+    const userMarker = new google.maps.Marker({
+      position: { lat, lng },
+      map: this.map,
+      title: 'Din position',
     });
 
     this.map.setCenter({ lat, lng });
@@ -89,21 +83,21 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
   updateRadius() {
     if (this.circle) {
-      this.circle.setRadius(this.radius * 1000);
+      this.circle.setRadius(this.radius);
     }
   }
 
-  useCurrentPosition() {
+  useCurrentPositionOnInit() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => this.drawCircle(pos.coords.latitude, pos.coords.longitude),
+        (pos) => this.initMap(pos.coords.latitude, pos.coords.longitude),
         (err) => {
           console.warn('Geolocation failed or denied', err);
-          alert('Kan inte hämta din position. Ange stad manuellt.');
+          this.initMap(this.defaultCoords.lat, this.defaultCoords.lng);
         },
       );
     } else {
-      alert('Geolocation stöds inte i din browser.');
+      this.initMap(this.defaultCoords.lat, this.defaultCoords.lng);
     }
   }
 
@@ -124,56 +118,5 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         }
       })
       .catch((err) => console.error(err));
-  }
-
-  // --- Profil + kategorier ---
-  loadUserProfile() {
-    this.userService.getMyProfile().subscribe({
-      next: (data) => {
-        this.userName = data.userName;
-        this.cd.detectChanges();
-      },
-      error: (err) => console.error('PROFILE ERROR', err),
-    });
-
-    this.userService.getProfilePicture().subscribe({
-      next: (res) => {
-        this.userProfileImage = `data:image/png;base64,${res.base64}`;
-        this.cd.detectChanges();
-      },
-      error: () => {
-        this.userProfileImage = 'assets/logo.png';
-      },
-    });
-  }
-
-  onProfileImageSelected(event: any) {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => this.saveProfileImage(reader.result as string);
-    reader.readAsDataURL(file);
-  }
-
-  private saveProfileImage(base64: string) {
-    this.userService.saveProfilePicture(base64).subscribe({
-      next: () => {
-        this.userProfileImage = base64;
-        this.cd.detectChanges();
-      },
-      error: (err) => console.error('Failed to save profile picture!', err),
-    });
-  }
-
-  loadCategories() {
-    this.categories = Object.values(ProductCategory).map((category) => ({
-      category,
-      selected: false,
-    }));
-  }
-
-  logout() {
-    this.auth.logout();
-    this.router.navigate(['/login']);
   }
 }
