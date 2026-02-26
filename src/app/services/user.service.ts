@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from './auth.service';
-import { Observable, map } from 'rxjs';
+import { Observable } from 'rxjs';
 import { environment } from '../../enviroments/environment';
 
 export interface UserProfile {
@@ -24,40 +24,29 @@ export class UserService {
 
   private getAuthHeaders(): HttpHeaders {
     const token = this.auth.getAccessToken();
+    if (!token) throw new Error('No access token found');
 
-    if (!token) {
-      throw new Error('No access token found');
-    }
-
-    return new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-    });
+    return new HttpHeaders({ Authorization: `Bearer ${token}` });
   }
 
-  /** Hämtar användarprofil */
   getMyProfile(): Observable<UserProfile> {
     return this.http.get<UserProfile>(`${this.ACCOUNT_URL}/my-profile`, {
       headers: this.getAuthHeaders(),
     });
   }
 
-  /** Hämtar profilbild */
   getProfilePicture() {
     return this.http.get<{ base64: string }>(`${this.ACCOUNT_URL}/profile-picture`, {
       headers: this.getAuthHeaders(),
     });
   }
 
-  /** Spara ny profilbild (Base64) */
+  /** Skicka ren Base64-sträng */
   saveProfilePicture(base64: string): Observable<any> {
-    return this.http.put(`${this.ACCOUNT_URL}/profile-picture`, JSON.stringify(base64), {
+    const payload = { base64 };
+    return this.http.put(`${this.ACCOUNT_URL}/profile-picture`, payload, {
       headers: new HttpHeaders({
-        ...this.getAuthHeaders()
-          .keys()
-          .reduce((acc: any, key) => {
-            acc[key] = this.getAuthHeaders().get(key);
-            return acc;
-          }, {}),
+        Authorization: `Bearer ${this.auth.getAccessToken()}`,
         'Content-Type': 'application/json',
       }),
     });

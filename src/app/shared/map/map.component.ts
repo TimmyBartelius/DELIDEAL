@@ -17,7 +17,7 @@ declare var google: any;
 
 @Component({
   selector: 'app-dashboard',
-  templateUrl: `../../pages/home/dashboard/dashboard.component.html`,
+  templateUrl: `./map.component.html`,
   standalone: true,
   imports: [CommonModule, FormsModule],
 })

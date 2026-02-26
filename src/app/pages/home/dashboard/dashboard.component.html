@@ -7,6 +7,7 @@
         class="form-control"
         placeholder="Sök produkter..."
         [(ngModel)]="searchTerm"
+        (ngModelChange)="filterProducts()"
       />
     </div>
   </div>
@@ -79,6 +80,7 @@
               type="checkbox"
               [id]="category.category"
               [(ngModel)]="category.selected"
+              (change)="onCategoryChange()"
             />
             <label class="form-check-label" [for]="category.category">{{
               category.category
@@ -96,6 +98,41 @@
       <div class="card p-3">
         <h2>Välkommen till DeliDeal!</h2>
         <p>Här kan du börja använda appen som inloggad användare.</p>
+      </div>
+
+      <!-- PRODUKTLISTAN -->
+      <div class="row">
+        <div
+          class="col-md-4 mb-3"
+          *ngFor="let product of filteredProducts | filterByName: searchTerm"
+        >
+          <div class="card h-100 p-3 shadow-sm text-center">
+            <!-- Produktbild -->
+            <img
+              [src]="product.image || 'assets/logo.png'"
+              alt="{{ product.name }}"
+              class="card-img-top mb-2"
+              style="height: 120px; object-fit: contain"
+            />
+            <!-- Produktnamn -->
+            <h5>{{ product.name }}</h5>
+            <!-- Pris -->
+            <p class="mb-1">
+              <span [ngClass]="{ 'text-danger fw-bold': product.specialOffer }">
+                {{ product.price }} kr
+              </span>
+              <span *ngIf="product.specialOffer" class="badge bg-warning ms-2">Erbjudande!</span>
+            </p>
+            <!-- Lagerstatus -->
+            <p class="mb-0">
+              <small class="text-muted"> {{ product.stockLevel | titlecase }} kvar </small>
+            </p>
+            <p class="text-muted">{{ product.category }}</p>
+          </div>
+        </div>
+        <div class="col-12" *ngIf="filteredProducts.length === 0">
+          <p>Inga produkter matchar ditt filter.</p>
+        </div>
       </div>
     </div>
   </div>
