@@ -1,16 +1,22 @@
-import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  OnInit,
+  viewChild,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '../../../services/auth.service';
-import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { ProductCategory } from '../../../../enums/product-category.enum';
+import { Router } from '@angular/router';
+import { AuthService } from '../../../services/auth.service';
 import { UserService } from '../../../services/user.service';
 
 import { MapComponent } from '../../../shared/map/map.component';
 import { Product } from '../../../shared/models/product.model';
 import { Merchant } from '../../../shared/models/merchant.model';
-
-declare var google: any;
+import { ProductCategory } from '../../../../enums/product-category.enum';
+import { max } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
@@ -20,6 +26,10 @@ declare var google: any;
   imports: [CommonModule, FormsModule, MapComponent],
 })
 export class DashboardComponent implements OnInit {
+  @ViewChild('locationInput') locationInput!: ElementRef;
+  @ViewChild('map') mapComponent!: MapComponent;
+  @ViewChild('detailMap') detailMap!: MapComponent;
+
   products: Product[] = [
     {
       name: 'Räkor',
@@ -122,27 +132,13 @@ export class DashboardComponent implements OnInit {
   merchants: Merchant[] = [];
   filteredMerchants: Merchant[] = [];
   selectedMerchant: Merchant | null = null;
-
   filteredProducts: Product[] = [];
   searchTerm: string = '';
   categories: { category: ProductCategory; selected: boolean }[] = [];
-
-  @ViewChild('locationInput') locationInput!: ElementRef;
-  @ViewChild('merchantMap') merchantMap!: ElementRef;
-
-  ngAfterViewInit() {
-    if (this.selectedMerchant) {
-      this.loadMerchantMap(this.selectedMerchant);
-    }
-  }
-
-  map: any;
-  circle: any;
-  defaultCoords = { lat: 57.7089, lng: 11.9746 };
+  radius: number = 1;
 
   userName: string = '';
   userProfileImage: string = 'assets/logo.png';
-  radius: number = 1;
 
   constructor(
     private userService: UserService,
@@ -156,13 +152,7 @@ export class DashboardComponent implements OnInit {
     this.filteredProducts = [];
     this.setupMerchants();
     this.filteredMerchants = [...this.merchants];
-
-    (window as any).initMap = this.initMap.bind(this);
-
-    const token = this.auth.getAccessToken();
-    console.log('Access token: ', token);
     this.loadUserProfile();
-    this.loadGoogleMaps();
   }
 
   setupMerchants() {
@@ -200,112 +190,76 @@ export class DashboardComponent implements OnInit {
     ];
   }
 
+  loadCategories() {
+    this.categories = Object.values(ProductCategory).map((category) => ({
+      category,
+      selected: false,
+    }));
+  }
+
   filterProducts() {
     const selectedCategories = this.categories.filter((c) => c.selected).map((c) => c.category);
 
-    this.filteredProducts = this.products.filter((p) => {
-      const matchesCategory =
-        selectedCategories.length === 0 || selectedCategories.includes(p.category);
-      const matchesSearch =
-        !this.searchTerm || p.name.toLowerCase().includes(this.searchTerm.toLowerCase());
-      return matchesCategory && matchesSearch;
-    });
+    const center = this.mapComponent.circle?.getCenter();
+    let merchantsInRadius: Merchant[] = this.merchants;
 
-    this.filteredMerchants = this.merchants.filter((merchant) =>
-      merchant.products.some(
+    if (center) {
+      merchantsInRadius = this.mapComponent.getMerchantsWithinRadius(
+        { lat: center.lat(), lng: center.lng() },
+        this.radius,
+      );
+    }
+
+    this.filteredMerchants = this.merchants.filter((m) =>
+      m.products.some(
         (p) =>
-          (!this.searchTerm || p.name.toLowerCase().includes(this.searchTerm.toLowerCase())) &&
-          (selectedCategories.length === 0 || selectedCategories.includes(p.category)),
+          (selectedCategories.length === 0 || selectedCategories.includes(p.category)) &&
+          (!this.searchTerm || p.name.toLowerCase().includes(this.searchTerm.toLowerCase())),
       ),
     );
-
-    if (!this.searchTerm && selectedCategories.length === 0) {
-      this.filteredMerchants = [...this.merchants];
-    }
-  }
-
-  selectMerchant(merchant: Merchant) {
-    this.selectedMerchant = merchant;
-    this.cd.detectChanges();
-    setTimeout(() => {
-      this.loadMerchantMap(merchant);
-    }, 0);
-  }
-  loadMerchantMap(merchant: Merchant) {
-    if (!this.merchantMap) return;
-
-    const mapOptions = {
-      center: { lat: merchant.latitude, lng: merchant.longitude },
-      zoom: 15,
-    };
-
-    const map = new google.maps.Map(this.merchantMap.nativeElement, mapOptions);
-
-    new google.maps.Marker({
-      position: { lat: merchant.latitude, lng: merchant.longitude },
-      map: map,
-      title: merchant.name,
-    });
+    this.filteredProducts = this.products.filter((p) =>
+      this.filteredMerchants.some((m) => m.products.includes(p)),
+    );
+    this.mapComponent.drawMerchantMarkers(this.filteredMerchants);
   }
 
   onCategoryChange() {
     this.filterProducts();
   }
 
-  onMapCenterChanged(center: { lat: number; lng: number }) {
-    this.filteredMerchants = this.merchants.filter(
-      (m) => this.distanceBetween(center.lat, center.lng, m.latitude, m.longitude) <= this.radius,
-    );
+  selectMerchant(merchant: Merchant) {
+    this.selectedMerchant = merchant;
+    this.cd.detectChanges();
+
+    setTimeout(() => {
+      if (this.detailMap && this.detailMap.map) {
+        this.detailMap.drawMerchantMarkers([merchant]);
+        this.detailMap.map.setCenter({
+          lat: merchant.latitude,
+          lng: merchant.longitude,
+        });
+        this.detailMap.map.setZoom(15);
+      }
+    }, 0);
+  }
+
+  updateRadius() {
+    if (!this.mapComponent) return;
+    this.mapComponent.radius = this.radius;
     this.filterProducts();
   }
 
-  private distanceBetween(lat1: number, lng1: number, lat2: number, lng2: number): number {
-    const R = 6371;
-    const dLat = this.deg2rad(lat2 - lat1);
-    const dLng = this.deg2rad(lng2 - lng1);
-    const a =
-      Math.sin(dLat / 2) ** 2 +
-      Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) * Math.sin(dLng / 2) ** 2;
-    return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  onMapCenterChanged(center: { lat: number; lng: number }) {
+    this.filterProducts();
   }
-
-  private deg2rad(deg: number): number {
-    return deg * (Math.PI / 180);
-  }
-
-  loadUserProfile() {
-    this.userService.getMyProfile().subscribe({
-      next: (data) => {
-        this.userName = data.userName;
-        this.cd.detectChanges();
-      },
-      error: (err) => console.error('PROFILE ERROR', err),
-    });
-
-    this.userService.getProfilePicture().subscribe({
-      next: (res) => {
-        this.userProfileImage = `data:image/png;base64,${res.base64}`;
-        this.cd.detectChanges();
-      },
-      error: () => {
-        this.userProfileImage = 'assets/logo.png';
-      },
-    });
-  }
-
   onProfileImageSelected(event: any) {
     const file = event.target.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      this.resizeImage(file, 500, 500).then((resizedBase64) => {
-        this.saveProfileImage(resizedBase64);
-      });
-    };
-    reader.readAsDataURL(file);
+    this.resizeImage(file, 500, 500).then((resizedBase64) => {
+      this.saveProfileImage(resizedBase64);
+    });
   }
-
   resizeImage(file: File, maxWidth: number, maxHeight: number): Promise<string> {
     return new Promise((resolve, reject) => {
       const img = new Image();
@@ -322,7 +276,6 @@ export class DashboardComponent implements OnInit {
           width *= scale;
           height *= scale;
         }
-
         const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
@@ -338,7 +291,6 @@ export class DashboardComponent implements OnInit {
       reader.readAsDataURL(file);
     });
   }
-
   private saveProfileImage(base64: string) {
     const pureBase64 = base64.split(',')[1].replace(/\s/g, '');
     this.userService.saveProfilePicture(pureBase64).subscribe({
@@ -348,46 +300,6 @@ export class DashboardComponent implements OnInit {
       },
       error: (err) => console.error('Failed to save profile picture!', err),
     });
-  }
-
-  logout() {
-    this.auth.logout();
-    this.router.navigate(['/home']);
-  }
-
-  loadGoogleMaps() {
-    if ((window as any).google) {
-      this.initMap();
-      return;
-    }
-    const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyD2SuMGC6eoAsofz21EvyubGsm7rDu22IE&callback=initMap`;
-    script.defer = true;
-    script.async = true;
-    script.onload = () => this.initMap();
-    document.head.appendChild(script);
-  }
-
-  initMap() {
-    const mapOptions = { center: this.defaultCoords, zoom: 10 };
-    this.map = new google.maps.Map(document.getElementById('map') as HTMLElement, mapOptions);
-  }
-
-  drawCircle(lat: number, lng: number) {
-    if (this.circle) this.circle.setMap(null);
-
-    this.circle = new google.maps.Circle({
-      strokeColor: '#FF0000',
-      strokeOpacity: 0.8,
-      strokeWeight: 2,
-      fillColor: '#FF0000',
-      fillOpacity: 0.2,
-      map: this.map,
-      center: { lat, lng },
-      radius: this.radius,
-    });
-
-    this.map.setCenter({ lat, lng });
   }
 
   searchCity() {
@@ -401,22 +313,33 @@ export class DashboardComponent implements OnInit {
       .then((data: any) => {
         if (data.results && data.results.length > 0) {
           const loc = data.results[0].geometry.location;
-          this.drawCircle(loc.lat, loc.lng);
-        } else alert('Staden hittades inte.');
+          this.filterProducts();
+        } else {
+          alert('Staden hittades inte.');
+        }
       })
       .catch((err) => console.error(err));
   }
 
-  updateRadius() {
-    if (this.circle) this.circle.setRadius(this.radius);
-    const center = this.circle ? this.circle.getCenter() : this.defaultCoords;
-    this.onMapCenterChanged({ lat: center.lat(), lng: center.lng() });
+  loadUserProfile() {
+    this.userService.getMyProfile().subscribe({
+      next: (data) => {
+        ((this.userName = data.userName), this.cd.detectChanges());
+      },
+      error: (err) => console.error('PROFILE ERROR', err),
+    });
+    this.userService.getProfilePicture().subscribe({
+      next: (res) => {
+        this.userProfileImage = `data:image/png;base,${res.base64}`;
+        this.cd.detectChanges();
+      },
+      error: () => {
+        this.userProfileImage = 'assets/logo.png';
+      },
+    });
   }
-
-  loadCategories() {
-    this.categories = Object.values(ProductCategory).map((category) => ({
-      category,
-      selected: false,
-    }));
+  logout() {
+    this.auth.logout();
+    this.router.navigate(['/home']);
   }
 }
