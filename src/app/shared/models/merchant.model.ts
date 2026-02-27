@@ -11,4 +11,6 @@ export interface Merchant {
   longitude: number;
 
   products: Product[];
+
+  productsFiltered?: Product[];
 }

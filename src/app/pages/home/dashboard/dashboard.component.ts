@@ -188,6 +188,7 @@ export class DashboardComponent implements OnInit {
         products: this.products.filter((p) => ['Krabba', 'Hårdost', 'Sej'].includes(p.name)),
       },
     ];
+    this.merchants.forEach((m) => (m.productsFiltered = [...m.products]));
   }
 
   loadCategories() {
@@ -197,35 +198,67 @@ export class DashboardComponent implements OnInit {
     }));
   }
 
-  filterProducts() {
+  filterMerchantsBySearch() {
+    this.filteredMerchants = this.merchants.filter((m) =>
+      m.products.some((p) => p.name.toLowerCase().includes(this.searchTerm.toLowerCase())),
+    );
+    if (this.mapComponent?.drawMerchantMarkers) {
+      this.mapComponent.drawMerchantMarkers(this.filteredMerchants);
+    }
+  }
+
+  filterProductsByCategory() {
+    if (!this.selectedMerchant) return;
+
     const selectedCategories = this.categories.filter((c) => c.selected).map((c) => c.category);
 
-    const center = this.mapComponent.circle?.getCenter();
-    let merchantsInRadius: Merchant[] = this.merchants;
-
-    if (center) {
-      merchantsInRadius = this.mapComponent.getMerchantsWithinRadius(
-        { lat: center.lat(), lng: center.lng() },
-        this.radius,
+    if (selectedCategories.length === 0) {
+      this.selectedMerchant.productsFiltered = [...this.selectedMerchant.products];
+    } else {
+      this.selectedMerchant.productsFiltered = this.selectedMerchant.products.filter((p) =>
+        selectedCategories.includes(p.category),
       );
     }
-
-    this.filteredMerchants = this.merchants.filter((m) =>
-      m.products.some(
-        (p) =>
-          (selectedCategories.length === 0 || selectedCategories.includes(p.category)) &&
-          (!this.searchTerm || p.name.toLowerCase().includes(this.searchTerm.toLowerCase())),
-      ),
-    );
-    this.filteredProducts = this.products.filter((p) =>
-      this.filteredMerchants.some((m) => m.products.includes(p)),
-    );
-    this.mapComponent.drawMerchantMarkers(this.filteredMerchants);
   }
 
-  onCategoryChange() {
-    this.filterProducts();
-  }
+  // filterProducts() {
+  //   const selectedCategories = this.categories.filter((c) => c.selected).map((c) => c.category);
+
+  //   let merchantsInRadius: Merchant[] = this.merchants;
+  //   const center = this.mapComponent?.circle?.getCenter();
+  //   if (center && this.mapComponent) {
+  //     merchantsInRadius = this.mapComponent.getMerchantsWithinRadius(
+  //       { lat: center.lat(), lng: center.lng() },
+  //       this.radius,
+  //     );
+  //   }
+
+  //   this.filteredMerchants = merchantsInRadius
+  //     .map((m) => {
+  //       const filteredProducts = m.products.filter(
+  //         (p) =>
+  //           (selectedCategories.length === 0 || selectedCategories.includes(p.category)) &&
+  //           (!this.searchTerm || p.name.toLowerCase().includes(this.searchTerm.toLowerCase())),
+  //       );
+
+  //       if (filteredProducts.length > 0) {
+  //         return { ...m, products: filteredProducts };
+  //       } else {
+  //         return null;
+  //       }
+  //     })
+  //     .filter((m): m is Merchant => m !== null);
+
+  //   this.filteredProducts = this.filteredMerchants.flatMap((m) => m.products);
+
+  //   if (this.mapComponent?.drawMerchantMarkers) {
+  //     this.mapComponent.drawMerchantMarkers(this.filteredMerchants);
+  //   }
+  // }
+
+  // onCategoryChange() {
+  //   this.filterProducts();
+  // }
 
   selectMerchant(merchant: Merchant) {
     this.selectedMerchant = merchant;
@@ -246,11 +279,11 @@ export class DashboardComponent implements OnInit {
   updateRadius() {
     if (!this.mapComponent) return;
     this.mapComponent.radius = this.radius;
-    this.filterProducts();
+    this.filterMerchantsBySearch();
   }
 
   onMapCenterChanged(center: { lat: number; lng: number }) {
-    this.filterProducts();
+    this.filterMerchantsBySearch();
   }
   onProfileImageSelected(event: any) {
     const file = event.target.files[0];
@@ -313,7 +346,7 @@ export class DashboardComponent implements OnInit {
       .then((data: any) => {
         if (data.results && data.results.length > 0) {
           const loc = data.results[0].geometry.location;
-          this.filterProducts();
+          this.filterMerchantsBySearch();
         } else {
           alert('Staden hittades inte.');
         }
@@ -341,5 +374,16 @@ export class DashboardComponent implements OnInit {
   logout() {
     this.auth.logout();
     this.router.navigate(['/home']);
+  }
+  safeDrawMarkers() {
+    if (this.selectedMerchant) {
+      if (this.detailMap?.drawMerchantMarkers) {
+        this.detailMap.drawMerchantMarkers([this.selectedMerchant]);
+      }
+    } else {
+      if (this.mapComponent?.drawMerchantMarkers) {
+        this.mapComponent.drawMerchantMarkers(this.filteredMerchants);
+      }
+    }
   }
 }

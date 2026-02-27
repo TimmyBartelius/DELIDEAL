@@ -7,7 +7,7 @@
         class="form-control"
         placeholder="Sök produkter..."
         [(ngModel)]="searchTerm"
-        (ngModelChange)="filterProducts(); mapComponent.drawMerchantMarkers(filteredMerchants)"
+        (ngModelChange)="filterMerchantsBySearch(); safeDrawMarkers()"
       />
     </div>
   </div>
@@ -39,7 +39,7 @@
         </div>
 
         <!-- Checkboxes -->
-        <div class="mb-3">
+        <div class="mb-3" *ngIf="selectedMerchant">
           <label class="form-label">Produktkategorier</label>
           <div *ngFor="let category of categories" class="form-check">
             <input
@@ -47,7 +47,7 @@
               type="checkbox"
               [id]="category.category"
               [(ngModel)]="category.selected"
-              (change)="onCategoryChange(); mapComponent.drawMerchantMarkers(filteredMerchants)"
+              (change)="filterProductsByCategory(); safeDrawMarkers()"
             />
             <label class="form-check-label" [for]="category.category">{{
               category.category
@@ -107,13 +107,13 @@
               ></app-map>
             </div>
             <p>{{ selectedMerchant.address }}, {{ selectedMerchant.city }}</p>
-            <p>{{ selectedMerchant.products.length }} produkter tillgängliga:</p>
+            <p>{{ selectedMerchant.productsFiltered?.length }} produkter tillgängliga:</p>
             <button class="btn btn-secondary btn-sm mb-2" (click)="selectedMerchant = null">
               Gå tillbaka
             </button>
 
             <div class="row">
-              <div class="col-md-4 mb-3" *ngFor="let product of selectedMerchant.products">
+              <div class="col-md-4 mb-3" *ngFor="let product of selectedMerchant.productsFiltered">
                 <div class="card h-100 p-3 shadow-sm text-center">
                   <img
                     [src]="product.image || 'assets/logo.png'"
