@@ -1,6 +1,6 @@
 export enum ProductCategory {
-  Fish = 'Fish',
-  Seafood = 'Seafood',
-  Meat = 'Meat',
-  Cheese = 'Cheese',
+  Fish = 'Fisk',
+  Seafood = 'Skaldjur',
+  Meat = 'Kött',
+  Cheese = 'Ost',
 }
