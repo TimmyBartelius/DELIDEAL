@@ -5,6 +5,7 @@ export interface Merchant {
   name: string;
   city: string;
   address: string;
+  image: string;
 
   latitude: number;
   longitude: number;
