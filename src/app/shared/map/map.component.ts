@@ -1,6 +1,16 @@
-import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, Input } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  AfterViewInit,
+  ViewChild,
+  ElementRef,
+  Input,
+  Output,
+  EventEmitter,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Merchant } from '../models/merchant.model';
 
 declare var google: any;
 
@@ -34,6 +44,9 @@ export class MapComponent implements OnInit, AfterViewInit {
     return this._radius;
   }
 
+  @Input() merchants: Merchant[] = [];
+  @Output() centerChanged: EventEmitter<{ lat: number; lng: number }> = new EventEmitter();
+
   constructor() {}
 
   ngOnInit(): void {}
@@ -56,6 +69,7 @@ export class MapComponent implements OnInit, AfterViewInit {
       zoom: 13,
     });
     this.drawCircle(lat, lng);
+    this.drawMerchantMarkers();
   }
 
   drawCircle(lat: number, lng: number) {
@@ -79,6 +93,18 @@ export class MapComponent implements OnInit, AfterViewInit {
     });
 
     this.map.setCenter({ lat, lng });
+    this.centerChanged.emit({ lat, lng });
+  }
+  drawMerchantMarkers() {
+    if (!this.map || !this.merchants) return;
+
+    this.merchants.forEach((merchant) => {
+      new google.maps.Marker({
+        position: { lat: merchant.latitude, lng: merchant.longitude },
+        map: this.map,
+        title: merchant.name,
+      });
+    });
   }
 
   updateRadius() {

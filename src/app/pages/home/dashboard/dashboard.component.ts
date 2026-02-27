@@ -5,9 +5,10 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProductCategory } from '../../../../enums/product-category.enum';
 import { UserService } from '../../../services/user.service';
-import { FilterByNamePipe } from '../../../shared/filter-by-name.pipe';
+
 import { MapComponent } from '../../../shared/map/map.component';
 import { Product } from '../../../shared/models/product.model';
+import { Merchant } from '../../../shared/models/merchant.model';
 
 declare var google: any;
 
@@ -16,7 +17,7 @@ declare var google: any;
   templateUrl: `dashboard.component.html`,
   styleUrls: ['dashboard.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, FilterByNamePipe, MapComponent],
+  imports: [CommonModule, FormsModule, MapComponent],
 })
 export class DashboardComponent implements OnInit {
   // MOCK PRODUCTS //
@@ -118,9 +119,14 @@ export class DashboardComponent implements OnInit {
       specialOffer: true,
     },
   ];
+  merchants: Merchant[] = [];
+  filteredMerchants: Merchant[] = [];
+  selectedMerchant: Merchant | null = null;
+
   filteredProducts: Product[] = [] as Product[];
   searchTerm: string = '';
   categories: { category: ProductCategory; selected: boolean }[] = [];
+
   ///////////////////////////////////////////////////////
   @ViewChild('locationInput') locationInput!: ElementRef;
 
@@ -132,6 +138,8 @@ export class DashboardComponent implements OnInit {
   userProfileImage: string = 'assets/logo.png';
   radius: number = 1;
 
+  hasSearched: boolean = false;
+
   constructor(
     private userService: UserService,
     private auth: AuthService,
@@ -141,7 +149,8 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadCategories();
-    this.filteredProducts = [...this.products];
+    this.filteredProducts = [];
+    this.setupMerchants();
 
     (window as any).initMap = this.initMap.bind(this);
 
@@ -151,10 +160,43 @@ export class DashboardComponent implements OnInit {
     this.loadGoogleMaps();
   }
 
-  //Filtrering
+  setupMerchants() {
+    this.merchants = [
+      {
+        id: 1,
+        name: 'Kött & Hav Göteborg',
+        city: 'Göteborg',
+        address: 'Kungstorget 1, Göteborg',
+        latitude: 57.7089,
+        longitude: 11.9746,
+        products: this.products.filter((p) => ['Entrecote', 'Lax', 'Räkor'].includes(p.name)),
+      },
+      {
+        id: 2,
+        name: 'ICA Maxi Göteborg',
+        city: 'Göteborg',
+        address: 'Grafiska vägen 16, Göteborg',
+        latitude: 57.695,
+        longitude: 11.996,
+        products: this.products.filter((p) => ['Revben', 'Mögelost', 'Krabba'].includes(p.name)),
+      },
+      {
+        id: 3,
+        name: 'COOP Eriksberg',
+        city: 'Göteborg',
+        address: 'Monsungatan 2, Göteborg',
+        latitude: 57.7081,
+        longitude: 11.9135,
+        products: this.products.filter((p) => ['Krabba', 'Hårdost', 'Sej'].includes(p.name)),
+      },
+    ];
+  }
+
+  // --- FILTER PRODUCTS & MERCHANTS ---
   filterProducts() {
     const selectedCategories = this.categories.filter((c) => c.selected).map((c) => c.category);
 
+    // Filter products
     this.filteredProducts = this.products.filter((p) => {
       const matchesCategory =
         selectedCategories.length === 0 || selectedCategories.includes(p.category);
@@ -162,10 +204,50 @@ export class DashboardComponent implements OnInit {
         !this.searchTerm || p.name.toLowerCase().includes(this.searchTerm.toLowerCase());
       return matchesCategory && matchesSearch;
     });
+
+    // Filter merchants that have matching products
+    this.filteredMerchants = this.merchants.filter((merchant) =>
+      merchant.products.some(
+        (p) =>
+          (!this.searchTerm || p.name.toLowerCase().includes(this.searchTerm.toLowerCase())) &&
+          (selectedCategories.length === 0 || selectedCategories.includes(p.category)),
+      ),
+    );
+
+    // Reset selected merchant if search changes
+    this.selectedMerchant = null;
+    this.hasSearched = true;
+  }
+
+  // --- SELECT HANDLER ---
+  selectMerchant(merchant: Merchant) {
+    this.selectedMerchant = merchant;
   }
 
   onCategoryChange() {
     this.filterProducts();
+  }
+
+  onMapCenterChanged(center: { lat: number; lng: number }) {
+    this.filteredMerchants = this.merchants.filter(
+      (merchant) =>
+        this.distanceBetween(center.lat, center.lng, merchant.latitude, merchant.longitude) <=
+        this.radius,
+    );
+    this.filterProducts();
+  }
+  private distanceBetween(lat1: number, lng1: number, lat2: number, lng2: number): number {
+    const R = 6371;
+    const dLat = this.deg2rad(lat2 - lat1);
+    const dLng = this.deg2rad(lng2 - lng1);
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) * Math.sin(dLng / 2) ** 2;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
+  private deg2rad(deg: number): number {
+    return deg * (Math.PI / 180);
   }
 
   /** Ladda användarprofil och profilbild med token */
@@ -294,6 +376,8 @@ export class DashboardComponent implements OnInit {
     const city = (this.locationInput.nativeElement as HTMLInputElement).value;
     if (!city) return;
 
+    this.hasSearched = true;
+
     fetch(
       `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
         city,
@@ -311,8 +395,9 @@ export class DashboardComponent implements OnInit {
 
   updateRadius() {
     if (this.circle) this.circle.setRadius(this.radius);
+    const center = this.circle ? this.circle.getCenter() : this.defaultCoords;
+    this.onMapCenterChanged({ lat: center.lat(), lng: center.lng() });
   }
-
   loadCategories() {
     this.categories = Object.values(ProductCategory).map((category) => ({
       category,

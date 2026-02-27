@@ -5,7 +5,7 @@
       <input
         type="text"
         class="form-control"
-        placeholder="Sök produkter..."
+        placeholder="Sök produkter eller handlare..."
         [(ngModel)]="searchTerm"
         (ngModelChange)="filterProducts()"
       />
@@ -99,41 +99,79 @@
     <div class="col-md-9">
       <div class="card p-3">
         <h2>Välkommen till DeliDeal!</h2>
-        <p>Här kan du börja använda appen som inloggad användare.</p>
       </div>
 
-      <!-- PRODUKTLISTAN -->
-      <div class="row">
-        <div
-          class="col-md-4 mb-3"
-          *ngFor="let product of filteredProducts | filterByName: searchTerm"
-        >
-          <div class="card h-100 p-3 shadow-sm text-center">
-            <!-- Produktbild -->
-            <img
-              [src]="product.image || 'assets/logo.png'"
-              alt="{{ product.name }}"
-              class="card-img-top mb-2"
-              style="height: 120px; object-fit: contain"
-            />
-            <!-- Produktnamn -->
-            <h5>{{ product.name }}</h5>
-            <!-- Pris -->
-            <p class="mb-1">
-              <span [ngClass]="{ 'text-danger fw-bold': product.specialOffer }">
-                {{ product.price }} kr
-              </span>
-              <span *ngIf="product.specialOffer" class="badge bg-warning ms-2">Erbjudande!</span>
-            </p>
-            <!-- Lagerstatus -->
-            <p class="mb-0">
-              <small class="text-muted"> {{ product?.stockLevel | titlecase }} kvar </small>
-            </p>
-            <p class="text-muted">{{ product.category }}</p>
-          </div>
+      <!-- PRODUKTOMRÅDE -->
+      <div class="card p-3">
+        <!-- Before -->
+        <div *ngIf="!hasSearched" class="text-center text-muted">
+          <p>Sök efter en produkt för att se tillgängliga varor.</p>
         </div>
-        <div class="col-12" *ngIf="filteredProducts.length === 0">
-          <p>Inga produkter matchar ditt filter.</p>
+
+        <!-- After -->
+        <div *ngIf="hasSearched">
+          <!-- 1. Merchant -->
+          <div *ngIf="filteredMerchants.length > 0">
+            <h5>Handlare som matchar din sökning:</h5>
+            <div class="row">
+              <div class="col-md-6 mb-3" *ngFor="let merchant of filteredMerchants">
+                <div
+                  class="card h-100 p-3 shadow-sm text-center"
+                  (click)="selectMerchant(merchant)"
+                  style="cursor: pointer"
+                >
+                  <h5>{{ merchant.name }}</h5>
+                  <p class="mb-1">{{ merchant.city }}</p>
+                  <p class="text-muted">{{ merchant.address }}</p>
+                  <small class="text-muted">{{ merchant.products.length }} produkter</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. DETAILED MERCHANT -->
+          <div *ngIf="selectedMerchant" class="mt-3">
+            <div class="card p-3 mb-3">
+              <h4>{{ selectedMerchant.name }}</h4>
+              <p>{{ selectedMerchant.address }}, {{ selectedMerchant.city }}</p>
+              <p>{{ selectedMerchant.products.length }} produkter tillgängliga:</p>
+              <button class="btn btn-secondary btn-sm mb-2" (click)="selectedMerchant = null">
+                Stäng
+              </button>
+
+              <!-- PRODUCTS FOR MERCHANT -->
+              <div class="row">
+                <div class="col-md-4 mb-3" *ngFor="let product of selectedMerchant.products">
+                  <div class="card h-100 p-3 shadow-sm text-center">
+                    <img
+                      [src]="product.image || 'assets/logo.png'"
+                      alt="{{ product.name }}"
+                      class="card-img-top mb-2"
+                      style="height: 100px; object-fit: contain"
+                    />
+                    <h6>{{ product.name }}</h6>
+                    <p class="mb-1">
+                      <span [ngClass]="{ 'text-danger fw-bold': product.specialOffer }"
+                        >{{ product.price }} kr</span
+                      >
+                      <span *ngIf="product.specialOffer" class="badge bg-warning ms-2"
+                        >Erbjudande!</span
+                      >
+                    </p>
+                    <p class="text-muted">{{ product.category }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Om inga handlare matchar -->
+          <div
+            *ngIf="filteredMerchants.length === 0 && filteredProducts.length === 0"
+            class="text-center"
+          >
+            <p>Inga produkter eller handlare matchar din sökning.</p>
+          </div>
         </div>
       </div>
     </div>
