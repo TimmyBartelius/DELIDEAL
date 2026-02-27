@@ -8,9 +8,11 @@
         placeholder="Sök produkter..."
         [(ngModel)]="searchTerm"
         (ngModelChange)="filterMerchantsBySearch(); safeDrawMarkers()"
+        (focus)="showSuggestions = true"
+        (blur)="hideSuggestions()"
       />
       <ul
-        *ngIf="filteredProductSuggestions.length > 0"
+        *ngIf="showSuggestions && filteredProductSuggestions.length > 0"
         class="list-group position-absolute w-100"
         style="z-index: 1000; max-height: 200px; overflow-y: auto"
       >
@@ -19,6 +21,7 @@
           class="list-group-item list-group-item-action"
           (click)="selectSuggestion(suggestion)"
           style="cursor: pointer"
+          [innerHTML]="highlightMatch(suggestion)"
         >
           {{ suggestion }}
         </li>

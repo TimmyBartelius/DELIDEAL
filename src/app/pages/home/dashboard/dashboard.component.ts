@@ -133,6 +133,7 @@ export class DashboardComponent implements OnInit {
   userProfileImage: string = 'assets/logo.png';
 
   allProductNames: string[] = [];
+  showSuggestions: boolean = false;
 
   constructor(
     private userService: UserService,
@@ -159,6 +160,23 @@ export class DashboardComponent implements OnInit {
     this.searchTerm = suggestion;
     this.filterMerchantsBySearch();
     this.safeDrawMarkers();
+  }
+
+  onSearchTermChange() {
+    this.showSuggestions = true;
+    this.filterMerchantsBySearch();
+    this.safeDrawMarkers();
+  }
+  hideSuggestions() {
+    setTimeout(() => {
+      this.showSuggestions = false;
+    }, 150);
+  }
+  highlightMatch(suggestion: string): string {
+    if (!this.searchTerm) return suggestion;
+    const term = this.searchTerm.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const regex = new RegExp(`(${term})`, 'gi');
+    return suggestion.replace(regex, `<mark>$1</mark>`);
   }
 
   setupMerchants() {
