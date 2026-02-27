@@ -1,11 +1,4 @@
-import {
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  OnInit,
-  viewChild,
-  ViewChild,
-} from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -16,7 +9,6 @@ import { MapComponent } from '../../../shared/map/map.component';
 import { Product } from '../../../shared/models/product.model';
 import { Merchant } from '../../../shared/models/merchant.model';
 import { ProductCategory } from '../../../../enums/product-category.enum';
-import { max } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
@@ -140,6 +132,8 @@ export class DashboardComponent implements OnInit {
   userName: string = '';
   userProfileImage: string = 'assets/logo.png';
 
+  allProductNames: string[] = [];
+
   constructor(
     private userService: UserService,
     private auth: AuthService,
@@ -153,6 +147,18 @@ export class DashboardComponent implements OnInit {
     this.setupMerchants();
     this.filteredMerchants = [...this.merchants];
     this.loadUserProfile();
+
+    this.allProductNames = this.products.map((p) => p.name);
+  }
+  get filteredProductSuggestions(): string[] {
+    if (!this.searchTerm) return [];
+    const term = this.searchTerm.toLowerCase();
+    return this.allProductNames.filter((name) => name.toLowerCase().includes(term));
+  }
+  selectSuggestion(suggestion: string) {
+    this.searchTerm = suggestion;
+    this.filterMerchantsBySearch();
+    this.safeDrawMarkers();
   }
 
   setupMerchants() {

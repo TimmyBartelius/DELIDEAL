@@ -1,7 +1,7 @@
 <div class="container-fluid mt-3">
   <!-- Sökfält -->
   <div class="row mb-3">
-    <div class="col-12">
+    <div class="col-12 position-relative">
       <input
         type="text"
         class="form-control"
@@ -9,6 +9,20 @@
         [(ngModel)]="searchTerm"
         (ngModelChange)="filterMerchantsBySearch(); safeDrawMarkers()"
       />
+      <ul
+        *ngIf="filteredProductSuggestions.length > 0"
+        class="list-group position-absolute w-100"
+        style="z-index: 1000; max-height: 200px; overflow-y: auto"
+      >
+        <li
+          *ngFor="let suggestion of filteredProductSuggestions"
+          class="list-group-item list-group-item-action"
+          (click)="selectSuggestion(suggestion)"
+          style="cursor: pointer"
+        >
+          {{ suggestion }}
+        </li>
+      </ul>
     </div>
   </div>
 
