@@ -13,7 +13,7 @@ export const environment: Environment = {
 
   apis: {
     default: {
-      url: 'http://localhost:5101',
+      url: 'http://localhost:5000',
       rootNamespace: 'MyApp',
     },
   },

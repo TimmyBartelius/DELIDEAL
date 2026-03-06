@@ -23,6 +23,7 @@
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
+            "outputPath": "dist/myapp-frontend",
             "assets": [
               {
                 "glob": "**/*",
@@ -34,10 +35,7 @@
                 "output": "assets"
               }
             ],
-            "styles": [
-              "node_modules/bootstrap/dist/css/bootstrap.min.css",
-              "src/styles.scss"
-            ]
+            "styles": ["node_modules/bootstrap/dist/css/bootstrap.min.css", "src/styles.scss"]
           },
           "configurations": {
             "production": {
@@ -65,7 +63,7 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
-          "options":{
+          "options": {
             "proxyConfig": "proxy.conf.json"
           },
           "configurations": {
