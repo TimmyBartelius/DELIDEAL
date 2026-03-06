@@ -23,7 +23,7 @@
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
-            "outputPath": "dist/myapp-frontend/MyProject.Web/wwwroot",
+            "outputPath": "dist/myapp-frontend/MyAppBackend/wwwroot",
             "baseHref": "/",
             "assets": [
               {
