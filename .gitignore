@@ -38,6 +38,12 @@ yarn-error.log
 testem.log
 /typings
 __screenshots__/
+.env
+**/enviroments
+**/enviroment.prod.ts
+**/environment.ts
+**/secret.ts
+**/firebase-key.json
 
 # System files
 .DS_Store
