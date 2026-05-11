@@ -33,7 +33,23 @@ export class AuthService {
 
   // --- LOGOUT ---
   logout() {
-    localStorage.clear();
+    const token = localStorage.getItem(this.TOKEN_KEY);
+    // Anropa backend för att logga ut användaren (ta bort refresh tokens)
+    this.http
+      .post(
+        `${this.API_BASE}/auth/logout`,
+        {},
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        },
+      )
+      .subscribe({
+        next: () => {},
+        error: () => {},
+        complete: () => {
+          localStorage.clear();
+        },
+      });
   }
 
   get isLoggedIn(): boolean {
