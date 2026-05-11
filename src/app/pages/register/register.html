@@ -4,9 +4,7 @@
       <h2 class="text-center mb-4">Skapa konto</h2>
 
       <!-- Felmeddelande -->
-      <div *ngIf="errorMessage" class="alert alert-danger">
-        {{ errorMessage }}
-      </div>
+      <div *ngIf="errorMessage" class="alert alert-info" [innerHTML]="errorMessage"></div>
 
       <form [formGroup]="registerForm" (ngSubmit)="register()">
         <!-- Användarnamn -->

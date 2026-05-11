@@ -40,21 +40,27 @@ export class RegisterComponent {
 
     this.authService.register(registerDto).subscribe({
       next: () => {
-        // Detta körs när registreringen lyckas
         this.errorMessage = null;
-        alert('Registrering lyckades! Du kan nu logga in.');
-        this.router.navigate(['/login']);
+        // Visa tydlig feedback istället för alert
+        this.errorMessage = 'Kontot har skapats! Du kan nu <a href="/login">logga in här</a>.';
+        // Vänta några sekunder innan redirect, eller låt användaren klicka själv
       },
       error: (err) => {
-        // Detta körs om registreringen misslyckas
         console.error(err);
-
-        if (err.status === 403) {
+        if (
+          err.status === 400 &&
+          err.error &&
+          typeof err.error === 'string' &&
+          err.error.includes('Email already exists')
+        ) {
+          this.errorMessage =
+            'E-postadressen är redan registrerad. <a href="/login">Logga in här</a> eller använd en annan e-post.';
+        } else if (err.status === 403) {
           this.errorMessage = 'Registrering tillåts inte - kontrollera serverinställningar.';
         } else if (err.status === 400) {
           this.errorMessage = 'Felaktig data. Kontrollera formuläret.';
         } else {
-          this.errorMessage = 'Registrering misslyckades';
+          this.errorMessage = 'Registrering misslyckades.';
         }
       },
     });

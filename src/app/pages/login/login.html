@@ -4,9 +4,7 @@
       <h2 class="text-center mb-4">Logga in</h2>
 
       <!-- Felmeddelande -->
-      <div *ngIf="errorMessage" class="alert alert-danger">
-        {{ errorMessage }}
-      </div>
+      <div *ngIf="errorMessage" class="alert alert-danger" [innerHTML]="errorMessage"></div>
 
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
         <!-- Användarnamn -->

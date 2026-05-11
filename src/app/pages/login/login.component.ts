@@ -34,14 +34,20 @@ export class LoginComponent {
       this.authService.login(email, password).subscribe({
         next: (res) => {
           console.log('Login successful!', res);
-
           this.router.navigate(['/dashboard']);
         },
         error: (err) => {
           console.error('Login failed', err);
-          this.errorMessage =
-            err.error?.error_description ||
-            'Login misslyckades. Kontrollera användarnamn och lösenord.';
+          // Anpassat felmeddelande beroende på statuskod
+          if (err.status === 401 || err.status === 403) {
+            this.errorMessage =
+              'Felaktigt användarnamn eller lösenord. Har du inget konto? <a href=\"/register\">Skapa konto här</a>';
+          } else if (err.status === 404) {
+            this.errorMessage = 'Kontot finns inte. <a href=\"/register\">Skapa konto här</a>';
+          } else {
+            this.errorMessage =
+              'Login misslyckades. Kontrollera användarnamn och lösenord. <a href=\"/register\">Skapa konto här</a>';
+          }
         },
       });
     } else {
