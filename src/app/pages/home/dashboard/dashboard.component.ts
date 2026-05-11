@@ -223,8 +223,13 @@ export class DashboardComponent implements OnInit {
   }
 
   filterMerchantsBySearch() {
+    const search = this.searchTerm.toLowerCase();
     this.filteredMerchants = this.merchants.filter((m) =>
-      m.products.some((p) => p.name.toLowerCase().includes(this.searchTerm.toLowerCase())),
+      m.products.some(
+        (p) =>
+          p.name.toLowerCase().includes(search) ||
+          (typeof p.category === 'string' && p.category.toLowerCase().includes(search)),
+      ),
     );
     if (this.mapComponent?.drawMerchantMarkers) {
       this.mapComponent.drawMerchantMarkers(this.filteredMerchants);

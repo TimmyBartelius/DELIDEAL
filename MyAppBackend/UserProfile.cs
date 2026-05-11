@@ -18,5 +18,8 @@ public class UserProfile
         public string Email { get; set; } = "";
         [FirestoreProperty]
         public string? Password { get; set; }
+
+        [FirestoreProperty]
+        public string Role { get; set; } = "customer";
     }
 }

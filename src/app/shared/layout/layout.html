@@ -1,16 +1,58 @@
 <body class="d-flex flex-column min-vh-100">
-
-  <header class="d-flex align-items-center justify-content-start border-bottom header">
-      <img src="assets/logo.png" height="40" class="me-2">
+  <header class="d-flex align-items-center justify-content-between border-bottom header">
+    <div class="d-flex align-items-center">
+      <img src="assets/logo.png" height="40" class="me-2" />
       <span class="text-white fw-bold">DELIDEAL</span>
+    </div>
+    <button
+      class="btn btn-link ms-auto p-0 theme-toggle-btn"
+      (click)="toggleTheme()"
+      aria-label="Toggle dark/light mode"
+    >
+      <span *ngIf="isLightMode" class="theme-icon">
+        <!-- Filled sun for light mode -->
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="28"
+          height="28"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <circle cx="12" cy="12" r="5" fill="#ffc107" />
+          <path
+            stroke="#ffc107"
+            stroke-width="2"
+            d="M12 1v2m0 18v2m11-9h-2M3 12H1m16.95 6.95-1.41-1.41M6.46 6.46 5.05 5.05m12.02 0-1.41 1.41M6.46 17.54l-1.41 1.41"
+          />
+        </svg>
+      </span>
+      <span *ngIf="!isLightMode" class="theme-icon">
+        <!-- Outlined sun for dark mode -->
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="28"
+          height="28"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <circle cx="12" cy="12" r="5" fill="none" stroke="#bfa76a" stroke-width="2" />
+          <path
+            stroke="#bfa76a"
+            stroke-width="2"
+            d="M12 1v2m0 18v2m11-9h-2M3 12H1m16.95 6.95-1.41-1.41M6.46 6.46 5.05 5.05m12.02 0-1.41 1.41M6.46 17.54l-1.41 1.41"
+          />
+        </svg>
+      </span>
+    </button>
   </header>
 
   <main class="flex-grow-1 content">
-      <router-outlet></router-outlet>
+    <router-outlet></router-outlet>
   </main>
 
   <footer class="d-flex align-items-center justify-content-center border-top footer text-white">
-      Copyright © 2026 Delideal AB
+    Copyright © 2026 Delideal AB
   </footer>
-
 </body>

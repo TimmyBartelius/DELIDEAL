@@ -1,7 +1,7 @@
-<div class="container-fluid mt-3">
+<div class="container-fluid mt-1 dashboard-gold-bg-main">
   <!-- Sökfält -->
-  <div class="row mb-3">
-    <div class="col-12 position-relative">
+  <div class="row mb-2">
+    <div class="col-12 position-relative dashboard-searchbar-shadow">
       <input
         type="text"
         class="form-control"
@@ -33,7 +33,7 @@
   <div class="row">
     <!-- Sidomeny -->
     <div class="col-md-3">
-      <div class="card p-3 mb-3">
+      <div class="card p-3 mb-3 dashboard-green-bg">
         <!-- Profil -->
         <div class="text-center mb-3">
           <img
@@ -79,7 +79,7 @@
 
     <!-- Huvudinnehåll -->
     <div class="col-md-9">
-      <div class="card p-3">
+      <div class="dashboard-welcome-gold p-3 mb-3">
         <h2>Välkommen till DeliDeal!</h2>
       </div>
 
@@ -91,7 +91,7 @@
           <div class="row">
             <div class="col-md-6 mb-3" *ngFor="let merchant of filteredMerchants">
               <div
-                class="card h-100 p-3 shadow-sm text-center"
+                class="card h-100 p-3 text-center dashboard-green-bg"
                 (click)="selectMerchant(merchant)"
                 style="cursor: pointer; transform: scale(1.02)"
               >
@@ -131,7 +131,7 @@
 
             <div class="row">
               <div class="col-md-4 mb-3" *ngFor="let product of selectedMerchant.productsFiltered">
-                <div class="card h-100 p-3 shadow-sm text-center">
+                <div class="card h-100 p-3 text-center dashboard-green-bg">
                   <img
                     [src]="product.image || 'assets/logo.png'"
                     alt="{{ product.name }}"

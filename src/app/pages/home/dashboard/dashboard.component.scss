@@ -1,3 +1,71 @@
+// Grön bakgrund för sidomeny och handlar-kort
+.dashboard-green-bg {
+  background-color: #388e3c !important; /* Exakt samma grön som header/footer */
+  color: #fff;
+}
+
+// Gör searchbar närmare toppen
+.container-fluid {
+  margin-top: 4px !important;
+}
+.dashboard-green-bg.card {
+  box-shadow:
+    16px 8px 48px 0 rgba(56, 142, 60, 0.32),
+    8px 4px 24px 0 rgba(0, 0, 0, 0.22);
+  border: none;
+}
+
+// Sidomeny skugga
+.dashboard-green-bg {
+  box-shadow:
+    16px 8px 48px 0 rgba(56, 142, 60, 0.32),
+    8px 4px 24px 0 rgba(0, 0, 0, 0.22);
+}
+
+// Searchbar skugga
+.dashboard-searchbar-shadow {
+  box-shadow:
+    16px 8px 48px 0 rgba(191, 167, 106, 0.32),
+    8px 4px 24px 0 rgba(0, 0, 0, 0.22);
+  border-radius: 8px;
+  background: #fff;
+}
+
+// Handlare-kort och produktkort skugga
+.dashboard-green-bg.card,
+.dashboard-green-bg .card {
+  box-shadow:
+    16px 8px 48px 0 rgba(56, 142, 60, 0.32),
+    8px 4px 24px 0 rgba(0, 0, 0, 0.22);
+}
+
+// Justera textfärg i handlar-kort för kontrast
+.dashboard-green-bg .card-title,
+.dashboard-green-bg h5,
+.dashboard-green-bg h2,
+.dashboard-green-bg p,
+.dashboard-green-bg small {
+  color: #fff !important;
+}
+// Matt, rustik guld bakgrund för hela sidan
+
+// Guld bakgrund på dashboardens huvudyta
+.dashboard-gold-bg-main {
+  background-color: #bfa76a !important;
+  min-height: 100vh;
+  width: 100%;
+  padding-bottom: 2rem;
+}
+// Guld-aktig bakgrund till välkomstmeddelandet
+.dashboard-welcome-gold {
+  background: rgba(0, 0, 0, 0);
+  color: #fff !important;
+  border: none !important;
+  border-radius: 12px;
+  box-shadow: none;
+  margin-bottom: 0.1rem;
+  padding: 0.25rem 0.5rem !important;
+}
 .form-check-input {
   border-radius: 8px;
   border: none;
@@ -57,7 +125,7 @@ input[type='range']::-webkit-slider-thumb {
 }
 
 input[type='range']::-webkit-slider-thumb:hover {
-  background-color: (#28a745, 10%);
+  background-color: scale-color(#28a745, $lightness: -10%);
 }
 
 input[type='range']::-moz-range-thumb {
@@ -71,7 +139,7 @@ input[type='range']::-moz-range-thumb {
 }
 
 input[type='range']::-moz-range-thumb:hover {
-  background-color: darken(#28a745, 10%);
+  background-color: scale-color(#28a745, $lightness: -10%);
 }
 
 input[type='range']::-ms-thumb {

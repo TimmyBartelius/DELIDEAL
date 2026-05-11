@@ -34,7 +34,6 @@ export class AuthService {
   // --- LOGOUT ---
   logout() {
     const token = localStorage.getItem(this.TOKEN_KEY);
-    // Anropa backend för att logga ut användaren (ta bort refresh tokens)
     this.http
       .post(
         `${this.API_BASE}/auth/logout`,
@@ -44,11 +43,8 @@ export class AuthService {
         },
       )
       .subscribe({
-        next: () => {},
-        error: () => {},
-        complete: () => {
-          localStorage.clear();
-        },
+        next: () => localStorage.clear(),
+        error: () => localStorage.clear(),
       });
   }
 
@@ -92,17 +88,13 @@ export class AuthService {
 
   getProfilePicture() {
     return this.http
-      .get(`${this.API_BASE}/account/profile-picture`, {
-        responseType: 'blob',
-      })
-      .pipe(map((blob) => URL.createObjectURL(blob)));
+      .get<{ base64: string }>(`${this.API_BASE}/account/profile-picture`)
+      .pipe(map((res) => res.base64));
   }
 
   saveProfilePicture(base64: string): Observable<any> {
-    return this.http.put(`${this.ACCOUNT_URL}/profile-picture`, JSON.stringify(base64), {
-      headers: {
-        'Content-Type': 'application/json',
-      },
+    return this.http.put(`${this.ACCOUNT_URL}/profile-picture`, { base64 }, {
+      headers: { 'Content-Type': 'application/json' },
     });
   }
 }

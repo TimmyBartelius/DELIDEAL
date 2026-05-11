@@ -26,6 +26,33 @@ builder.Services.AddCors(options =>
 // ===== Lägg till controllers =====
 builder.Services.AddControllers();
 
+// ===== Firebase / Firestore =====
+Google.Cloud.Firestore.FirestoreDb firestoreDb;
+try
+{
+    var credentialPath = Path.GetFullPath("Firebase/firebase-key.json");
+    if (!System.IO.File.Exists(credentialPath))
+        throw new Exception($"Firebase credential not found at {credentialPath}");
+
+    // Sätt miljövariabeln så att Firestore-klienten hittar nyckeln
+    Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", credentialPath);
+
+    if (FirebaseAdmin.FirebaseApp.DefaultInstance == null)
+    {
+#pragma warning disable CS0618
+        var credential = Google.Apis.Auth.OAuth2.GoogleCredential.FromFile(credentialPath);
+#pragma warning restore CS0618
+        FirebaseAdmin.FirebaseApp.Create(new FirebaseAdmin.AppOptions { Credential = credential });
+    }
+    firestoreDb = Google.Cloud.Firestore.FirestoreDb.Create("examensarbete-3cda1");
+}
+catch (Exception ex)
+{
+    Console.WriteLine("Failed to initialize Firestore: " + ex.Message);
+    throw;
+}
+builder.Services.AddSingleton(firestoreDb);
+
 // ===== Lägg till vår "databas"/tjänster =====
 builder.Services.AddSingleton<IUserProfileService, UserProfileService>();
 

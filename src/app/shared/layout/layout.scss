@@ -1,15 +1,55 @@
+.theme-toggle-btn {
+  background: none;
+  border: none;
+  outline: none;
+  color: #fff;
+  margin-left: auto;
+  transition: color 0.2s;
+}
+
+.theme-icon svg {
+  display: block;
+}
+
+body.dark-mode {
+  background-color: #181818 !important;
+}
+body.dark-mode .header,
+body.dark-mode .footer {
+  background-color: #232323 !important;
+  color: #eee !important;
+}
+body.dark-mode .content {
+  background-color: #181818 !important;
+  color: #eee !important;
+}
+body.dark-mode .dashboard-green-bg,
+body.dark-mode .dashboard-green-bg.card,
+body.dark-mode .dashboard-green-bg .card {
+  background-color: #444 !important;
+  color: #eee !important;
+}
+body.dark-mode .card,
+body.dark-mode .dashboard-gold-bg-main {
+  background-color: #232323 !important;
+  color: #eee !important;
+}
+body.light-mode {
+  background-color: #bfa76a !important;
+}
 .header {
-    height: 60px;
-    padding: 0 20px;
+  height: 60px;
+  padding: 0 20px;
 }
 
 .content {
-    padding: 20px;
+  padding: 20px;
 }
 
 .footer {
-    height: 60px;
+  height: 60px;
 }
-.header, .footer {
-    background-color: #41823E;
+.header,
+.footer {
+  background-color: #41823e;
 }

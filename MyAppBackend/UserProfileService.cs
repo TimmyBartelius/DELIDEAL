@@ -1,3 +1,4 @@
+// ...removed duplicate method at file top...
 using System;
 using System.Threading.Tasks;
 using FirebaseAdmin;
@@ -14,8 +15,9 @@ namespace MyAppBackend
         Task<UserProfile?> GetProfile(string userId);
         Task<string?> GetProfilePicture(string userId);
         Task<UserProfile?> ValidateUser(string email, string password);
-        Task<UserProfile?> RegisterUser(string username, string email, string password);
+        Task<UserProfile?> RegisterUser(string username, string email, string password, string role = "customer");
         Task SaveProfilePicture(string userId, string base64Image);
+        Task DeleteAllUsers();
     }
 
     public class UserProfileService : IUserProfileService
@@ -23,30 +25,20 @@ namespace MyAppBackend
         public const string DefaultProfilePictureBase64 = "iVBORw0KGgoAAAANSUhEUgAAAF4AAABeCAYAAACq0qNuAAA...";
         private readonly FirestoreDb? _firestore;
 
-        public UserProfileService()
+        public UserProfileService(FirestoreDb firestore)
         {
-            try
-            {
-                if (FirebaseApp.DefaultInstance == null)
-                {
-                    var credentialPath = "Firebase/firebase-key.json";
-                    if (!System.IO.File.Exists(credentialPath))
-                        throw new Exception($"Firebase credential not found at {credentialPath}");
+            _firestore = firestore;
+        }
 
-                    var credential = GoogleCredential.FromFile(credentialPath);
-                    FirebaseApp.Create(new AppOptions
-                    {
-                        Credential = credential
-                    });
-                }
 
-                _firestore = FirestoreDb.Create("examensarbete-3cda1");
-            }
-            catch (Exception ex)
+        public async Task DeleteAllUsers()
+        {
+            EnsureFirestore();
+            var usersRef = _firestore!.Collection("users");
+            var snapshot = await usersRef.GetSnapshotAsync();
+            foreach (var doc in snapshot.Documents)
             {
-                // Logga felet, sätt _firestore = null så vi kan checka senare
-                Console.WriteLine("Failed to initialize Firestore: " + ex.Message);
-                _firestore = null;
+                await doc.Reference.DeleteAsync();
             }
         }
 
@@ -96,7 +88,7 @@ namespace MyAppBackend
             return null;
         }
 
-        public async Task<UserProfile?> RegisterUser(string username, string email, string password)
+        public async Task<UserProfile?> RegisterUser(string username, string email, string password, string role = "customer")
         {
             EnsureFirestore();
 
@@ -111,7 +103,8 @@ namespace MyAppBackend
                     Id = Guid.NewGuid().ToString(),
                     UserName = username,
                     Email = email,
-                    Password = BCrypt.Net.BCrypt.HashPassword(password)
+                    Password = BCrypt.Net.BCrypt.HashPassword(password),
+                    Role = role
                 };
 
                 await usersRef.Document(newUser.Id).SetAsync(newUser);

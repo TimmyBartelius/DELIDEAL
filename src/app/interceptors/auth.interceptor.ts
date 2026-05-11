@@ -18,6 +18,7 @@ export class AuthInterceptor implements HttpInterceptor {
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     const token = this.auth.getAccessToken();
+    const isAuthRoute = req.url.includes('/auth/login') || req.url.includes('/auth/register') || req.url.includes('/auth/refresh');
 
     let request = req;
 
@@ -29,32 +30,23 @@ export class AuthInterceptor implements HttpInterceptor {
       });
     }
 
-    return next
-      .handle(request)
-
-      .pipe(
-        catchError((error: HttpErrorResponse) => {
-          if (error.status === 401) {
-            return this.auth
-              .refreshToken()
-
-              .pipe(
-                switchMap(() => {
-                  const newToken = this.auth.getAccessToken();
-
-                  const newRequest = req.clone({
-                    setHeaders: {
-                      Authorization: `Bearer ${newToken}`,
-                    },
-                  });
-
-                  return next.handle(newRequest);
-                }),
-              );
-          }
-
-          return throwError(() => error);
-        }),
-      );
+    return next.handle(request).pipe(
+      catchError((error: HttpErrorResponse) => {
+        if (error.status === 401 && !isAuthRoute) {
+          return this.auth.refreshToken().pipe(
+            switchMap(() => {
+              const newToken = this.auth.getAccessToken();
+              const newRequest = req.clone({
+                setHeaders: {
+                  Authorization: `Bearer ${newToken}`,
+                },
+              });
+              return next.handle(newRequest);
+            }),
+          );
+        }
+        return throwError(() => error);
+      }),
+    );
   }
 }
