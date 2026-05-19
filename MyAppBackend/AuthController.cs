@@ -56,7 +56,8 @@ namespace MyAppBackend.Controllers
                     token = accessToken,
                     refreshToken = refreshToken,
                     userId = user.Id,
-                    userName = user.UserName
+                    userName = user.UserName,
+                    role = user.Role ?? "customer"
                 });
             }
             catch (Exception ex)

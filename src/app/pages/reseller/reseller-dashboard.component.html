@@ -1,0 +1,265 @@
+﻿<div class="rp-wrap">
+
+  <!-- ── Topprad ─────────────────────────────────────────────── -->
+  <div class="rp-topbar">
+    <div>
+      <h2 class="rp-title">{{ store?.name || 'Återförsäljarportal' }}</h2>
+      <span class="rp-subtitle">Hantera din butik och dina produkter</span>
+    </div>
+    <button class="btn btn-danger btn-sm" (click)="logout()">Logga ut</button>
+  </div>
+
+  <!-- ── Global loader / fel ─────────────────────────────────── -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-success"></div>
+    <p class="mt-2 text-muted">Laddar butiksinformation…</p>
+  </div>
+
+  <div *ngIf="globalError && !loading" class="alert alert-danger">{{ globalError }}</div>
+
+  <!-- ── Innehåll ─────────────────────────────────────────────── -->
+  <div *ngIf="!loading && store">
+
+    <!-- Flikar -->
+    <ul class="nav nav-tabs rp-tabs mb-4">
+      <li class="nav-item">
+        <button class="nav-link" [class.active]="activeTab === 'store'" (click)="activeTab = 'store'">
+          Butiksprofil
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" [class.active]="activeTab === 'products'" (click)="activeTab = 'products'">
+          Produkter <span class="badge bg-secondary ms-1">{{ products.length }}</span>
+        </button>
+      </li>
+    </ul>
+
+    <!-- FLIK 1 – BUTIKSPROFIL -->
+    <div *ngIf="activeTab === 'store'" class="rp-card">
+      <h5 class="rp-section-title">Butiksinformation</h5>
+      <div class="row g-4">
+        <div class="col-12 col-md-3 text-center">
+          <div class="rp-logo-wrap" (click)="storeImgInput.click()">
+            <img *ngIf="storeImagePreview" [src]="storeImagePreview" alt="Butiksbild" class="rp-logo-img" />
+            <div *ngIf="!storeImagePreview" class="rp-logo-placeholder">
+              <span>Klicka för att ladda upp bild</span>
+            </div>
+            <div class="rp-logo-overlay">Byt bild</div>
+          </div>
+          <input #storeImgInput type="file" accept="image/*" hidden (change)="onStoreImageSelected($event)" />
+        </div>
+        <div class="col-12 col-md-9">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Butiksnamn</label>
+            <input type="text" class="form-control" [(ngModel)]="storeForm.name" placeholder="Butiksnamn" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Adress</label>
+            <input type="text" class="form-control" [(ngModel)]="storeForm.address" placeholder="Gatuadress, stad" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Telefon</label>
+            <input type="text" class="form-control" [(ngModel)]="storeForm.phone" placeholder="070-000 00 00" />
+          </div>
+          <div class="d-flex align-items-center gap-3">
+            <button class="btn btn-success" (click)="saveStore()" [disabled]="savingStore">
+              <span *ngIf="savingStore" class="spinner-border spinner-border-sm me-1"></span>
+              Spara ändringar
+            </button>
+            <span *ngIf="storeSaved" class="text-success fw-semibold">Sparat!</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FLIK 2 – PRODUKTER -->
+    <div *ngIf="activeTab === 'products'">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h5 class="rp-section-title mb-0">Dina produkter</h5>
+        <button class="btn btn-success btn-sm" (click)="showAddProduct = !showAddProduct">
+          {{ showAddProduct ? 'Avbryt' : '+ Ny produkt' }}
+        </button>
+      </div>
+
+      <!-- Ny produkt-formulär -->
+      <div *ngIf="showAddProduct" class="rp-card rp-add-card mb-4">
+        <h6 class="fw-semibold mb-3">Ny produkt</h6>
+        <div class="row g-3">
+          <div class="col-12 col-sm-6 col-lg-4">
+            <label class="form-label">Namn *</label>
+            <input type="text" class="form-control" [(ngModel)]="newProductForm.name" placeholder="Produktnamn" />
+          </div>
+          <div class="col-12 col-sm-6 col-lg-2">
+            <label class="form-label">Kategori</label>
+            <select class="form-select" [(ngModel)]="newProductForm.category">
+              <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+            </select>
+          </div>
+          <div class="col-6 col-lg-2">
+            <label class="form-label">Pris (kr) *</label>
+            <input type="number" class="form-control" [(ngModel)]="newProductForm.price" min="0" />
+          </div>
+          <div class="col-6 col-lg-2">
+            <label class="form-label">Lagersaldo *</label>
+            <input type="number" class="form-control" [(ngModel)]="newProductForm.stockAmount" min="0" />
+          </div>
+          <div class="col-6 col-lg-2">
+            <label class="form-label">Enhet</label>
+            <input type="text" class="form-control" [(ngModel)]="newProductForm.unit" placeholder="kg, st..." />
+          </div>
+          <div class="col-6 col-sm-auto">
+            <label class="form-label d-block">Bild</label>
+            <div class="rp-mini-img-wrap" (click)="newImgInput.click()">
+              <img *ngIf="newProductImagePreview" [src]="newProductImagePreview" class="rp-mini-img" />
+              <span *ngIf="!newProductImagePreview" class="text-muted small">Välj bild</span>
+            </div>
+            <input #newImgInput type="file" accept="image/*" hidden (change)="onNewProductImageSelected($event)" />
+          </div>
+        </div>
+        <button class="btn btn-success mt-3" (click)="addProduct()"
+          [disabled]="addingProduct || !newProductForm.name || newProductForm.price <= 0">
+          <span *ngIf="addingProduct" class="spinner-border spinner-border-sm me-1"></span>
+          Lägg till produkt
+        </button>
+      </div>
+
+      <!-- Tom lista -->
+      <div *ngIf="products.length === 0 && !showAddProduct" class="text-center py-5 text-muted">
+        Du har inga produkter ännu. Klicka på "Ny produkt" för att börja.
+      </div>
+
+      <!-- Produktkort -->
+      <div *ngFor="let product of products" class="rp-product-card">
+
+        <!-- Visningsläge -->
+        <div class="rp-product-row" *ngIf="editingProductId !== product.id">
+          <div class="rp-product-img-wrap">
+            <img *ngIf="product.imageBase64" [src]="'data:image/jpeg;base64,' + product.imageBase64"
+              class="rp-product-img" [alt]="product.name" />
+            <div *ngIf="!product.imageBase64" class="rp-product-img rp-no-img">?</div>
+          </div>
+          <div class="rp-product-info">
+            <div class="rp-product-name">{{ product.name }}</div>
+            <div class="rp-product-meta">
+              <span class="badge bg-secondary">{{ product.category }}</span>
+              <span class="rp-price">{{ product.price | number:'1.0-2' }} kr</span>
+              <span class="rp-stock">Lager: {{ product.stockAmount }} {{ product.unit }}</span>
+              <span class="badge" [class.bg-success]="product.isAvailable" [class.bg-danger]="!product.isAvailable">
+                {{ product.isAvailable ? 'Tillgänglig' : 'Ej tillgänglig' }}
+              </span>
+              <ng-container *ngIf="getActiveOffer(product.id) as offer">
+                <span class="badge bg-warning text-dark">
+                  Erbjudande: {{ offer.offerPrice | number:'1.0-2' }} kr
+                  ({{ offer.discountPercent }}% rabatt) – t.o.m. {{ formatDate(offer.endsAt) }}
+                </span>
+              </ng-container>
+            </div>
+          </div>
+          <div class="rp-product-actions">
+            <button class="btn btn-outline-primary btn-sm" (click)="startEditProduct(product)">Redigera</button>
+            <button class="btn btn-outline-danger btn-sm" (click)="deleteProduct(product.id)">Ta bort</button>
+          </div>
+        </div>
+
+        <!-- Redigeringsläge -->
+        <div class="rp-edit-form" *ngIf="editingProductId === product.id">
+          <h6 class="fw-semibold mb-3">Redigera: {{ product.name }}</h6>
+          <div class="row g-3">
+            <div class="col-12 col-sm-6 col-lg-4">
+              <label class="form-label">Namn</label>
+              <input type="text" class="form-control" [(ngModel)]="editProductForm.name" />
+            </div>
+            <div class="col-12 col-sm-6 col-lg-2">
+              <label class="form-label">Kategori</label>
+              <select class="form-select" [(ngModel)]="editProductForm.category">
+                <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+              </select>
+            </div>
+            <div class="col-6 col-lg-2">
+              <label class="form-label">Pris (kr)</label>
+              <input type="number" class="form-control" [(ngModel)]="editProductForm.price" min="0" />
+            </div>
+            <div class="col-6 col-lg-2">
+              <label class="form-label">Lagersaldo</label>
+              <input type="number" class="form-control" [(ngModel)]="editProductForm.stockAmount" min="0" />
+            </div>
+            <div class="col-6 col-lg-2">
+              <label class="form-label">Enhet</label>
+              <input type="text" class="form-control" [(ngModel)]="editProductForm.unit" />
+            </div>
+            <div class="col-6 col-lg-auto d-flex flex-column justify-content-end">
+              <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" [(ngModel)]="editProductForm.isAvailable"
+                  [id]="'avail-' + product.id" />
+                <label class="form-check-label" [for]="'avail-' + product.id">Tillgänglig</label>
+              </div>
+            </div>
+            <div class="col-12 col-sm-auto">
+              <label class="form-label d-block">Bild</label>
+              <div class="rp-mini-img-wrap" (click)="editImgInput.click()">
+                <img *ngIf="editProductImagePreview" [src]="editProductImagePreview" class="rp-mini-img" />
+                <span *ngIf="!editProductImagePreview" class="text-muted small">Välj bild</span>
+              </div>
+              <input #editImgInput type="file" accept="image/*" hidden (change)="onEditProductImageSelected($event)" />
+            </div>
+          </div>
+          <div class="d-flex gap-2 mt-3">
+            <button class="btn btn-success btn-sm" (click)="saveProduct(product.id)" [disabled]="savingProduct">
+              <span *ngIf="savingProduct" class="spinner-border spinner-border-sm me-1"></span>
+              Spara
+            </button>
+            <button class="btn btn-outline-secondary btn-sm" (click)="cancelEditProduct()">Avbryt</button>
+          </div>
+        </div>
+
+        <!-- Erbjudandesektion -->
+        <div class="rp-offer-section">
+          <ng-container *ngIf="getActiveOffer(product.id) as offer">
+            <div class="rp-offer-active">
+              <span class="rp-offer-label">Aktivt erbjudande:</span>
+              <span class="fw-semibold">{{ offer.offerPrice | number:'1.0-2' }} kr</span>
+              <span class="text-muted small">({{ offer.discountPercent }}% rabatt på ord. {{ product.price | number:'1.0-2' }} kr)</span>
+              <span class="text-muted small">Gäller t.o.m. {{ formatDate(offer.endsAt) }}</span>
+              <button class="btn btn-outline-danger btn-sm ms-auto" (click)="removeOffer(offer.id)">
+                Avsluta erbjudande
+              </button>
+            </div>
+          </ng-container>
+
+          <ng-container *ngIf="!getActiveOffer(product.id)">
+            <button class="btn btn-outline-warning btn-sm" (click)="toggleOfferForm(product.id)">
+              {{ offerProductId === product.id ? 'Avbryt' : '+ Lägg till erbjudande' }}
+            </button>
+            <div *ngIf="offerProductId === product.id" class="rp-offer-form mt-2">
+              <div class="row g-2 align-items-end">
+                <div class="col-auto">
+                  <label class="form-label mb-1 small">Rabatt %</label>
+                  <input type="number" class="form-control form-control-sm" [(ngModel)]="newOfferForm.discountPercent"
+                    min="1" max="99" style="width: 90px" />
+                </div>
+                <div class="col-auto" *ngIf="newOfferForm.discountPercent > 0">
+                  <span class="small text-muted">
+                    Erbjudandepris: {{ calcOfferPrice(product.price, newOfferForm.discountPercent) | number:'1.0-2' }} kr
+                  </span>
+                </div>
+                <div class="col-auto">
+                  <label class="form-label mb-1 small">Gäller t.o.m.</label>
+                  <input type="datetime-local" class="form-control form-control-sm" [(ngModel)]="newOfferForm.endsAt" />
+                </div>
+                <div class="col-auto">
+                  <button class="btn btn-warning btn-sm" (click)="addOffer(product)"
+                    [disabled]="addingOffer || !newOfferForm.discountPercent || !newOfferForm.endsAt">
+                    <span *ngIf="addingOffer" class="spinner-border spinner-border-sm me-1"></span>
+                    Aktivera
+                  </button>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

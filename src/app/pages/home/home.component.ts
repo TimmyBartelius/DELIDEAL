@@ -21,7 +21,14 @@ export class HomeComponent {
 
   ngOnInit(): void {
     if (this.auth.isLoggedIn) {
-      this.router.navigate(['/dashboard']);
+      const role = this.auth.getUserRole();
+      if (role === 'merchant') {
+        this.router.navigate(['/reseller']);
+      } else if (role === 'admin') {
+        this.router.navigate(['/admin']);
+      } else {
+        this.router.navigate(['/dashboard']);
+      }
     }
   }
 

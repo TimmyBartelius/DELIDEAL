@@ -11,6 +11,26 @@
   display: block;
 }
 
+.theme-icon {
+  .icon-filled {
+    opacity: 1;
+    transition: opacity 0.25s ease;
+  }
+  .icon-outline {
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+
+  &.is-dark {
+    .icon-filled {
+      opacity: 0;
+    }
+    .icon-outline {
+      opacity: 1;
+    }
+  }
+}
+
 // ── Mörkt läge ──────────────────────────────────────────────────────
 html.dark-mode,
 body.dark-mode {

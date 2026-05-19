@@ -34,7 +34,14 @@ export class LoginComponent {
       this.authService.login(email, password).subscribe({
         next: (res) => {
           console.log('Login successful!', res);
-          this.router.navigate(['/dashboard']);
+          const role = res.role ?? 'customer';
+          if (role === 'admin') {
+            this.router.navigate(['/admin']);
+          } else if (role === 'merchant') {
+            this.router.navigate(['/reseller']);
+          } else {
+            this.router.navigate(['/dashboard']);
+          }
         },
         error: (err) => {
           console.error('Login failed', err);

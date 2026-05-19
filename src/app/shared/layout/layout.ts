@@ -12,8 +12,12 @@ export class LayoutComponent {
   isLightMode = true;
 
   ngOnInit() {
-    document.documentElement.classList.add('light-mode');
-    document.body.classList.add('light-mode');
+    const isDark = document.documentElement.classList.contains('dark-mode');
+    this.isLightMode = !isDark;
+    if (!isDark) {
+      document.documentElement.classList.add('light-mode');
+      document.body.classList.add('light-mode');
+    }
   }
 
   toggleTheme() {
@@ -21,11 +25,15 @@ export class LayoutComponent {
     const html = document.documentElement;
     const body = document.body;
     if (this.isLightMode) {
-      html.classList.replace('dark-mode', 'light-mode');
-      body.classList.replace('dark-mode', 'light-mode');
+      html.classList.remove('dark-mode');
+      html.classList.add('light-mode');
+      body.classList.remove('dark-mode');
+      body.classList.add('light-mode');
     } else {
-      html.classList.replace('light-mode', 'dark-mode');
-      body.classList.replace('light-mode', 'dark-mode');
+      html.classList.remove('light-mode');
+      html.classList.add('dark-mode');
+      body.classList.remove('light-mode');
+      body.classList.add('dark-mode');
     }
   }
 }

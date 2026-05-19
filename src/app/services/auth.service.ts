@@ -8,6 +8,7 @@ export interface AuthResponse {
   refreshToken: string;
   userId: string;
   userName: string;
+  role: string;
 }
 
 @Injectable({
@@ -18,6 +19,8 @@ export class AuthService {
   private readonly ACCOUNT_URL = `${this.API_BASE}/account`;
   private readonly TOKEN_KEY = 'access_token';
   private readonly REFRESH_KEY = 'refresh_token';
+  private readonly ROLE_KEY = 'user_role';
+  private readonly USERNAME_KEY = 'user_name';
 
   constructor(private http: HttpClient) {}
 
@@ -27,6 +30,8 @@ export class AuthService {
       tap((res) => {
         localStorage.setItem(this.TOKEN_KEY, res.token);
         localStorage.setItem(this.REFRESH_KEY, res.refreshToken);
+        localStorage.setItem(this.ROLE_KEY, res.role ?? 'customer');
+        localStorage.setItem(this.USERNAME_KEY, res.userName ?? '');
       }),
     );
   }
@@ -50,6 +55,18 @@ export class AuthService {
 
   get isLoggedIn(): boolean {
     return !!localStorage.getItem(this.TOKEN_KEY);
+  }
+
+  getUserRole(): string {
+    return localStorage.getItem(this.ROLE_KEY) ?? 'customer';
+  }
+
+  get isAdmin(): boolean {
+    return this.getUserRole() === 'admin';
+  }
+
+  get isMerchant(): boolean {
+    return this.getUserRole() === 'merchant';
   }
 
   getAccessToken(): string | null {
@@ -93,8 +110,12 @@ export class AuthService {
   }
 
   saveProfilePicture(base64: string): Observable<any> {
-    return this.http.put(`${this.ACCOUNT_URL}/profile-picture`, { base64 }, {
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return this.http.put(
+      `${this.ACCOUNT_URL}/profile-picture`,
+      { base64 },
+      {
+        headers: { 'Content-Type': 'application/json' },
+      },
+    );
   }
 }
