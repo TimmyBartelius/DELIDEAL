@@ -1,0 +1,261 @@
+<div class="ad-wrap">
+  <!-- ── Topprad ─────────────────────────────────────────────── -->
+  <div class="ad-topbar">
+    <div>
+      <h2 class="ad-title">Adminpanel</h2>
+      <span class="ad-subtitle">Inloggad som admin</span>
+    </div>
+    <div class="d-flex gap-2 align-items-center flex-wrap">
+      <a routerLink="/dashboard" class="btn btn-outline-secondary btn-sm">Visa kundvy</a>
+      <a routerLink="/reseller" class="btn btn-outline-primary btn-sm">Visa återförsäljarvy</a>
+      <button class="btn btn-danger btn-sm" (click)="logout()">Logga ut</button>
+    </div>
+  </div>
+
+  <!-- ── Loader ──────────────────────────────────────────────── -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-success"></div>
+  </div>
+
+  <div *ngIf="loadError && !loading" class="alert alert-danger my-3">
+    <strong>Fel vid hämtning av data:</strong> {{ loadError }}
+    <button class="btn btn-sm btn-outline-danger ms-3" (click)="loadAll()">Försök igen</button>
+  </div>
+
+  <div *ngIf="!loading">
+    <!-- ── Framgångsbanner ─────────────────────────────────────── -->
+    <div *ngIf="createSuccess" class="alert alert-success">{{ createSuccess }}</div>
+
+    <!-- ── Flikar ──────────────────────────────────────────────── -->
+    <ul class="nav nav-tabs ad-tabs mb-4">
+      <li class="nav-item">
+        <button
+          class="nav-link"
+          [class.active]="activeTab === 'merchants'"
+          (click)="activeTab = 'merchants'"
+        >
+          Återförsäljare <span class="badge bg-secondary ms-1">{{ merchantUsers.length }}</span>
+        </button>
+      </li>
+      <li class="nav-item">
+        <button
+          class="nav-link"
+          [class.active]="activeTab === 'customers'"
+          (click)="activeTab = 'customers'"
+        >
+          Kunder <span class="badge bg-secondary ms-1">{{ customers.length }}</span>
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" [class.active]="activeTab === 'all'" (click)="activeTab = 'all'">
+          Alla användare <span class="badge bg-secondary ms-1">{{ allUsers.length }}</span>
+        </button>
+      </li>
+    </ul>
+
+    <!-- ══════════════════════════════════════════════════════════
+         FLIK 1 – ÅTERFÖRSÄLJARE
+    ═══════════════════════════════════════════════════════════ -->
+    <div *ngIf="activeTab === 'merchants'">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h5 class="ad-section-title mb-0">Återförsäljarkonton</h5>
+        <button class="btn btn-success btn-sm" (click)="showCreateForm = !showCreateForm">
+          {{ showCreateForm ? 'Avbryt' : '+ Skapa återförsäljarkonto' }}
+        </button>
+      </div>
+
+      <!-- Skapa-formulär -->
+      <div *ngIf="showCreateForm" class="ad-card ad-create-card mb-4">
+        <h6 class="fw-semibold mb-3">Nytt återförsäljarkonto</h6>
+        <div *ngIf="createError" class="alert alert-danger py-2">{{ createError }}</div>
+
+        <div class="row g-3">
+          <!-- Inloggningsuppgifter -->
+          <div class="col-12">
+            <p class="text-muted small mb-0 fw-semibold">Inloggningsuppgifter</p>
+          </div>
+          <div class="col-12 col-sm-6 col-md-4">
+            <label class="form-label">Användarnamn *</label>
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="createForm.userName"
+              placeholder="Butikens användarnamn"
+            />
+          </div>
+          <div class="col-12 col-sm-6 col-md-4">
+            <label class="form-label">E-post *</label>
+            <input
+              type="email"
+              class="form-control"
+              [(ngModel)]="createForm.email"
+              placeholder="butik@exempel.se"
+            />
+          </div>
+          <div class="col-12 col-sm-6 col-md-4">
+            <label class="form-label">Lösenord *</label>
+            <input
+              type="password"
+              class="form-control"
+              [(ngModel)]="createForm.password"
+              placeholder="Minst 8 tecken, en siffra"
+            />
+          </div>
+
+          <!-- Butiksinformation -->
+          <div class="col-12">
+            <p class="text-muted small mb-0 fw-semibold mt-1">Butiksinformation</p>
+          </div>
+          <div class="col-12 col-sm-6 col-md-4">
+            <label class="form-label">Butiksnamn *</label>
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="createForm.storeName"
+              placeholder="Butiksnamn"
+            />
+          </div>
+          <div class="col-12 col-sm-6 col-md-4">
+            <label class="form-label">Adress</label>
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="createForm.storeAddress"
+              placeholder="Gatuadress, stad"
+            />
+          </div>
+          <div class="col-12 col-sm-6 col-md-4">
+            <label class="form-label">Telefon</label>
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="createForm.storePhone"
+              placeholder="070-000 00 00"
+            />
+          </div>
+        </div>
+
+        <button class="btn btn-success mt-3" (click)="createMerchant()" [disabled]="creating">
+          <span *ngIf="creating" class="spinner-border spinner-border-sm me-1"></span>
+          Skapa konto
+        </button>
+      </div>
+
+      <!-- Merchant-lista -->
+      <div
+        *ngIf="merchantUsers.length === 0 && !showCreateForm"
+        class="text-center py-5 text-muted"
+      >
+        Inga återförsäljarkonton ännu.
+      </div>
+
+      <div *ngFor="let user of merchantUsers" class="ad-row">
+        <div class="ad-row-main">
+          <!-- Butikslogotyp -->
+          <div class="ad-store-img-wrap">
+            <ng-container *ngIf="getMerchantStore(user.id) as store">
+              <img
+                *ngIf="store.logoBase64"
+                [src]="'data:image/jpeg;base64,' + store.logoBase64"
+                class="ad-store-img"
+                [alt]="store.name"
+              />
+              <div *ngIf="!store.logoBase64" class="ad-store-img ad-no-img">🏪</div>
+            </ng-container>
+            <div *ngIf="!getMerchantStore(user.id)" class="ad-store-img ad-no-img">?</div>
+          </div>
+
+          <!-- Info -->
+          <div class="ad-row-info">
+            <div class="ad-row-name">{{ user.userName }}</div>
+            <div class="ad-row-meta">
+              <span class="text-muted small">{{ user.email }}</span>
+              <ng-container *ngIf="getMerchantStore(user.id) as store">
+                <span class="badge bg-primary">{{ store.name }}</span>
+                <span class="text-muted small" *ngIf="store.address">{{ store.address }}</span>
+              </ng-container>
+              <span *ngIf="!getMerchantStore(user.id)" class="badge bg-warning text-dark"
+                >Ingen butik kopplad</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="ad-row-actions">
+          <button
+            class="btn btn-outline-danger btn-sm"
+            (click)="deleteMerchant(user.id, getMerchantStore(user.id)?.id, user.userName)"
+          >
+            Ta bort
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         FLIK 2 – KUNDER
+    ═══════════════════════════════════════════════════════════ -->
+    <div *ngIf="activeTab === 'customers'">
+      <h5 class="ad-section-title mb-3">Kundkonton</h5>
+
+      <div *ngIf="customers.length === 0" class="text-center py-5 text-muted">
+        Inga kunder registrerade ännu.
+      </div>
+
+      <div *ngFor="let customer of customers" class="ad-row">
+        <div class="ad-row-main">
+          <div class="ad-store-img ad-no-img" style="font-size: 1.4rem">👤</div>
+          <div class="ad-row-info">
+            <div class="ad-row-name">{{ customer.userName }}</div>
+            <div class="ad-row-meta">
+              <span class="text-muted small">{{ customer.email }}</span>
+              <span class="badge bg-secondary">Kund</span>
+            </div>
+          </div>
+        </div>
+        <div class="ad-row-actions">
+          <button
+            class="btn btn-outline-danger btn-sm"
+            (click)="deleteCustomer(customer.id, customer.userName)"
+          >
+            Ta bort
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         FLIK 3 – ALLA ANVÄNDARE
+    ═══════════════════════════════════════════════════════════ -->
+    <div *ngIf="activeTab === 'all'">
+      <h5 class="ad-section-title mb-3">Alla användare</h5>
+
+      <div *ngIf="allUsers.length === 0" class="text-center py-5 text-muted">
+        Inga användare hittades.
+      </div>
+
+      <div *ngFor="let user of allUsers" class="ad-row">
+        <div class="ad-row-main">
+          <div class="ad-store-img ad-no-img" style="font-size: 1.4rem">
+            {{ user.role === 'admin' ? '🔑' : user.role === 'merchant' ? '🏪' : '👤' }}
+          </div>
+          <div class="ad-row-info">
+            <div class="ad-row-name">{{ user.userName }}</div>
+            <div class="ad-row-meta">
+              <span class="text-muted small">{{ user.email }}</span>
+              <span
+                class="badge"
+                [ngClass]="{
+                  'bg-danger': user.role === 'admin',
+                  'bg-primary': user.role === 'merchant',
+                  'bg-secondary': user.role === 'customer',
+                }"
+                >{{ user.role }}</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -21,7 +21,7 @@ namespace MyAppBackend.Models
         public string ImageBase64 { get; set; } = "";
 
         [FirestoreProperty]
-        public decimal Price { get; set; }
+        public double Price { get; set; }
 
         [FirestoreProperty]
         public string Unit { get; set; } = "kg";

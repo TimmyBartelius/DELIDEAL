@@ -51,7 +51,23 @@ namespace MyAppBackend.Services
         public async Task UpdateAsync(string id, Dictionary<string, object> fields)
         {
             await _firestore.Collection("products").Document(id).UpdateAsync(
-                fields.ToDictionary(f => f.Key, f => f.Value));
+                fields.ToDictionary(f => f.Key, f => UnwrapJsonElement(f.Value)));
+        }
+
+        private static object UnwrapJsonElement(object value)
+        {
+            if (value is System.Text.Json.JsonElement el)
+            {
+                return el.ValueKind switch
+                {
+                    System.Text.Json.JsonValueKind.String => el.GetString() ?? "",
+                    System.Text.Json.JsonValueKind.Number => el.TryGetInt64(out var l) ? (object)l : el.GetDouble(),
+                    System.Text.Json.JsonValueKind.True => (object)true,
+                    System.Text.Json.JsonValueKind.False => (object)false,
+                    _ => el.ToString()
+                };
+            }
+            return value;
         }
 
         public async Task DeleteAsync(string id)

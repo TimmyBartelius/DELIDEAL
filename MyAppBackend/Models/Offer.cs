@@ -16,11 +16,11 @@ namespace MyAppBackend.Models
 
         // Rabattprocent, t.ex. 20 = 20% rabatt
         [FirestoreProperty]
-        public decimal DiscountPercent { get; set; }
+        public double DiscountPercent { get; set; }
 
         // Beräknat pris under erbjudandet
         [FirestoreProperty]
-        public decimal OfferPrice { get; set; }
+        public double OfferPrice { get; set; }
 
         [FirestoreProperty]
         public DateTime StartsAt { get; set; }

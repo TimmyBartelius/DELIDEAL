@@ -155,7 +155,7 @@ namespace MyAppBackend.Controllers
     public class CreateOfferDto
     {
         public string ProductId { get; set; } = "";
-        public decimal DiscountPercent { get; set; }
+        public double DiscountPercent { get; set; }
         public DateTime StartsAt { get; set; }
         public DateTime EndsAt { get; set; }
     }

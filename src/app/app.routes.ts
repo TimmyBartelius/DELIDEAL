@@ -7,6 +7,7 @@ import { LayoutComponent } from './shared/layout/layout';
 import { HomeComponent } from './pages/home/home.component';
 import { DashboardComponent } from './pages/home/dashboard/dashboard.component';
 import { ResellerDashboardComponent } from './pages/reseller/reseller-dashboard.component';
+import { AdminDashboardComponent } from './pages/admin/admin-dashboard.component';
 
 export const appRoutes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -22,6 +23,11 @@ export const appRoutes: Routes = [
         path: 'reseller',
         component: ResellerDashboardComponent,
         canActivate: [roleGuard(['merchant', 'admin'])],
+      },
+      {
+        path: 'admin',
+        component: AdminDashboardComponent,
+        canActivate: [roleGuard(['admin'])],
       },
       { path: '', redirectTo: 'home', pathMatch: 'full' },
     ],

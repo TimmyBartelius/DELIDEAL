@@ -1,5 +1,4 @@
 <div class="container-fluid mt-1 dashboard-gold-bg-main">
-
   <!-- Sökfält + hamburgarmeny (hamburgaren syns bara på mobil) -->
   <div class="row mb-2 align-items-center gx-2">
     <div class="col position-relative dashboard-searchbar-shadow">
@@ -80,6 +79,9 @@
           </div>
         </div>
 
+        <a *ngIf="isAdmin" routerLink="/admin" class="btn btn-outline-warning w-100 mt-2"
+          >← Tillbaka till Adminpanel</a
+        >
         <button class="btn btn-danger w-100 mt-3" (click)="logout()">Logga ut</button>
       </div>
     </div>
@@ -126,6 +128,9 @@
           </div>
         </div>
 
+        <a *ngIf="isAdmin" routerLink="/admin" class="btn btn-outline-warning w-100 mt-2"
+          >← Tillbaka till Adminpanel</a
+        >
         <button class="btn btn-danger w-100 mt-3" (click)="logout()">Logga ut</button>
       </div>
     </div>

@@ -121,13 +121,21 @@ namespace MyAppBackend.Controllers
                 var accessToken = _tokenService.GenerateAccessToken(user.Id, user.Role ?? "customer");
                 var refreshToken = _tokenService.GenerateRefreshToken();
 
-                var refreshTokenObj = new RefreshToken
+                // Lagra refresh token – om detta misslyckas ska registreringen ändå lyckas
+                try
                 {
-                    Token = refreshToken,
-                    UserId = user.Id,
-                    Expires = DateTime.UtcNow.AddDays(7)
-                };
-                await _refreshTokenService.StoreRefreshTokenAsync(refreshTokenObj);
+                    var refreshTokenObj = new RefreshToken
+                    {
+                        Token = refreshToken,
+                        UserId = user.Id,
+                        Expires = DateTime.UtcNow.AddDays(7)
+                    };
+                    await _refreshTokenService.StoreRefreshTokenAsync(refreshTokenObj);
+                }
+                catch (Exception tokenEx)
+                {
+                    Console.WriteLine($"[REGISTER][WARN] Kunde inte spara refresh token: {tokenEx.Message}");
+                }
 
                 Console.WriteLine($"[REGISTER] User skapad: {user.Email} ({user.Role})");
                 return Ok(new
@@ -147,8 +155,9 @@ namespace MyAppBackend.Controllers
         }
 
         [HttpPost("refresh")]
-        public async Task<IActionResult> Refresh([FromBody] string refreshToken)
+        public async Task<IActionResult> Refresh([FromBody] string? refreshToken)
         {
+            if (string.IsNullOrEmpty(refreshToken)) return Unauthorized();
             var storedToken = await _refreshTokenService.GetRefreshTokenAsync(refreshToken);
             if (storedToken == null || storedToken.Expires < DateTime.UtcNow)
                 return Unauthorized();

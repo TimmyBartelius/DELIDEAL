@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { UserService } from '../../../services/user.service';
 
@@ -15,7 +15,7 @@ import { ProductCategory } from '../../../../enums/product-category.enum';
   templateUrl: `dashboard.component.html`,
   styleUrls: ['dashboard.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, MapComponent],
+  imports: [CommonModule, FormsModule, MapComponent, RouterModule],
 })
 export class DashboardComponent implements OnInit {
   @ViewChild('locationInput') locationInput!: ElementRef;
@@ -393,7 +393,7 @@ export class DashboardComponent implements OnInit {
     });
     this.userService.getProfilePicture().subscribe({
       next: (res) => {
-        this.userProfileImage = `data:image/png;base,${res.base64}`;
+        this.userProfileImage = `data:image/png;base64,${res.base64}`;
         this.cd.detectChanges();
       },
       error: () => {
@@ -404,6 +404,10 @@ export class DashboardComponent implements OnInit {
   logout() {
     this.auth.logout();
     this.router.navigate(['/home']);
+  }
+
+  get isAdmin(): boolean {
+    return this.auth.isAdmin;
   }
   safeDrawMarkers() {
     if (this.selectedMerchant) {

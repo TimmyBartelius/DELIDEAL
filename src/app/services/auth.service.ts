@@ -39,6 +39,9 @@ export class AuthService {
   // --- LOGOUT ---
   logout() {
     const token = localStorage.getItem(this.TOKEN_KEY);
+    // Rensa localStorage SYNKRONT direkt – UI uppdateras omedelbart
+    localStorage.clear();
+    // Anropa backend för att invalidera refresh-token (fire-and-forget)
     this.http
       .post(
         `${this.API_BASE}/auth/logout`,
@@ -47,10 +50,7 @@ export class AuthService {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         },
       )
-      .subscribe({
-        next: () => localStorage.clear(),
-        error: () => localStorage.clear(),
-      });
+      .subscribe({ next: () => {}, error: () => {} });
   }
 
   get isLoggedIn(): boolean {

@@ -20,20 +20,40 @@ namespace MyAppBackend.Controllers
             _merchantService = merchantService;
         }
 
+        // GET api/admin/all-users  – alla users oavsett roll
+        [HttpGet("all-users")]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            var userId = User.FindFirst("id")?.Value;
+            Console.WriteLine($"[ADMIN] GetAllUsers anropat av userId={userId}");
+            var all = await _userService.GetAllUsersAsync();
+            Console.WriteLine($"[ADMIN] GetAllUsers: {all.Count} users totalt");
+            // Returnera utan lösenordshash
+            return Ok(all.Select(u => new { u.Id, u.UserName, u.Email, u.Role, u.AllowMarketing }));
+        }
+
         // GET api/admin/customers
         [HttpGet("customers")]
         public async Task<IActionResult> GetCustomers()
         {
+            var userId = User.FindFirst("id")?.Value;
+            Console.WriteLine($"[ADMIN] GetCustomers anropat av userId={userId}");
             var all = await _userService.GetAllUsersAsync();
-            return Ok(all.Where(u => u.Role == "customer"));
+            var customers = all.Where(u => u.Role == "customer").ToList();
+            Console.WriteLine($"[ADMIN] GetCustomers: totalt {all.Count} users, {customers.Count} kunder");
+            return Ok(customers);
         }
 
         // GET api/admin/merchants-users
         [HttpGet("merchants-users")]
         public async Task<IActionResult> GetMerchantUsers()
         {
+            var userId = User.FindFirst("id")?.Value;
+            Console.WriteLine($"[ADMIN] GetMerchantUsers anropat av userId={userId}");
             var all = await _userService.GetAllUsersAsync();
-            return Ok(all.Where(u => u.Role == "merchant"));
+            var merchants = all.Where(u => u.Role == "merchant").ToList();
+            Console.WriteLine($"[ADMIN] GetMerchantUsers: totalt {all.Count} users, {merchants.Count} merchants");
+            return Ok(merchants);
         }
 
         // DELETE api/admin/users/{id}
@@ -87,6 +107,40 @@ namespace MyAppBackend.Controllers
             await _merchantService.DeleteAsync(id);
             return NoContent();
         }
+
+        // POST api/admin/create-merchant-account
+        // Skapar användarkonto (roll=merchant) + butikspost atomärt
+        [HttpPost("create-merchant-account")]
+        public async Task<IActionResult> CreateMerchantAccount([FromBody] CreateMerchantAccountDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Password) || string.IsNullOrWhiteSpace(dto.UserName))
+                return BadRequest("UserName, Email och Password är obligatoriska.");
+
+            try
+            {
+                var user = await _userService.RegisterUser(dto.UserName, dto.Email, dto.Password, "merchant");
+                if (user == null)
+                    return BadRequest("E-postadressen är redan registrerad.");
+
+                var merchant = new Merchant
+                {
+                    Name = dto.StoreName,
+                    Address = dto.StoreAddress,
+                    Phone = dto.StorePhone,
+                    Email = dto.Email,
+                    OwnerId = user.Id,
+                    IsActive = true,
+                };
+                var createdMerchant = await _merchantService.CreateAsync(merchant);
+
+                return Ok(new { user = new { user.Id, user.UserName, user.Email, user.Role }, merchant = createdMerchant });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[CREATE-MERCHANT][ERROR] {ex}");
+                return StatusCode(500, "Något gick fel vid skapandet av merchant-kontot: " + ex.Message);
+            }
+        }
     }
 
     public class UpdateUserDto
@@ -94,5 +148,15 @@ namespace MyAppBackend.Controllers
         public string? UserName { get; set; }
         public string? Email { get; set; }
         public string? Role { get; set; }
+    }
+
+    public class CreateMerchantAccountDto
+    {
+        public string UserName { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Password { get; set; } = "";
+        public string StoreName { get; set; } = "";
+        public string StoreAddress { get; set; } = "";
+        public string StorePhone { get; set; } = "";
     }
 }

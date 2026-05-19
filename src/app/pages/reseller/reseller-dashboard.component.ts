@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { MerchantPortalService } from '../../services/merchant-portal.service';
 import { MerchantApi, OfferApi, ProductApi } from '../../shared/models/merchant-api.model';
@@ -11,7 +11,7 @@ import { MerchantApi, OfferApi, ProductApi } from '../../shared/models/merchant-
   templateUrl: './reseller-dashboard.component.html',
   styleUrls: ['./reseller-dashboard.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
 })
 export class ResellerDashboardComponent implements OnInit {
   // ── Globalt ─────────────────────────────────────────────────────
@@ -69,9 +69,10 @@ export class ResellerDashboardComponent implements OnInit {
   ];
 
   constructor(
-    private authService: AuthService,
+    public authService: AuthService,
     private portalService: MerchantPortalService,
     private router: Router,
+    private cd: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -92,6 +93,7 @@ export class ResellerDashboardComponent implements OnInit {
       error: (err) => {
         this.globalError = 'Kunde inte ladda butiksinformation.';
         this.loading = false;
+        this.cd.detectChanges();
         console.error(err);
       },
     });
@@ -105,6 +107,7 @@ export class ResellerDashboardComponent implements OnInit {
       },
       error: () => {
         this.loading = false;
+        this.cd.detectChanges();
       },
     });
   }
@@ -114,9 +117,11 @@ export class ResellerDashboardComponent implements OnInit {
       next: (offers) => {
         this.offers = offers;
         this.loading = false;
+        this.cd.detectChanges();
       },
       error: () => {
         this.loading = false;
+        this.cd.detectChanges();
       },
     });
   }
@@ -128,6 +133,7 @@ export class ResellerDashboardComponent implements OnInit {
     this.toBase64(file).then((b64) => {
       this.storeImageB64 = b64.split(',')[1];
       this.storeImagePreview = b64;
+      this.cd.detectChanges();
     });
   }
 
@@ -147,10 +153,15 @@ export class ResellerDashboardComponent implements OnInit {
         this.savingStore = false;
         this.storeSaved = true;
         this.store!.name = this.storeForm.name;
-        setTimeout(() => (this.storeSaved = false), 3000);
+        this.cd.detectChanges();
+        setTimeout(() => {
+          this.storeSaved = false;
+          this.cd.detectChanges();
+        }, 3000);
       },
       error: () => {
         this.savingStore = false;
+        this.cd.detectChanges();
       },
     });
   }
@@ -182,6 +193,7 @@ export class ResellerDashboardComponent implements OnInit {
     this.toBase64(file).then((b64) => {
       this.editProductImageB64 = b64.split(',')[1];
       this.editProductImagePreview = b64;
+      this.cd.detectChanges();
     });
   }
 
@@ -205,9 +217,11 @@ export class ResellerDashboardComponent implements OnInit {
         if (this.editProductImageB64) p!.imageBase64 = this.editProductImageB64;
         this.savingProduct = false;
         this.editingProductId = null;
+        this.cd.detectChanges();
       },
       error: () => {
         this.savingProduct = false;
+        this.cd.detectChanges();
       },
     });
   }
@@ -222,6 +236,7 @@ export class ResellerDashboardComponent implements OnInit {
         if (this.editingProductId === productId) this.editingProductId = null;
         if (this.offerProductId === productId) this.offerProductId = null;
       },
+      error: (err) => console.error('[Reseller] deleteProduct fel:', err.status),
     });
   }
 
@@ -232,6 +247,7 @@ export class ResellerDashboardComponent implements OnInit {
     this.toBase64(file).then((b64) => {
       this.newProductImageB64 = b64.split(',')[1];
       this.newProductImagePreview = b64;
+      this.cd.detectChanges();
     });
   }
 
@@ -263,9 +279,11 @@ export class ResellerDashboardComponent implements OnInit {
         this.newProductImagePreview = '';
         this.showAddProduct = false;
         this.addingProduct = false;
+        this.cd.detectChanges();
       },
       error: () => {
         this.addingProduct = false;
+        this.cd.detectChanges();
       },
     });
   }
@@ -301,9 +319,11 @@ export class ResellerDashboardComponent implements OnInit {
         this.offers.push(offer);
         this.offerProductId = null;
         this.addingOffer = false;
+        this.cd.detectChanges();
       },
       error: () => {
         this.addingOffer = false;
+        this.cd.detectChanges();
       },
     });
   }
@@ -315,6 +335,7 @@ export class ResellerDashboardComponent implements OnInit {
       next: () => {
         this.offers = this.offers.filter((o) => o.id !== offerId);
       },
+      error: (err) => console.error('[Reseller] deleteOffer fel:', err.status),
     });
   }
 

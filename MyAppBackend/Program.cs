@@ -23,7 +23,12 @@ builder.Services.AddCors(options =>
 });
 
 // ===== Lägg till controllers =====
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Returnera camelCase JSON (id, userName, role) så att Angular-frontend matchar
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    });
 
 // ===== Firebase / Firestore =====
 Google.Cloud.Firestore.FirestoreDb firestoreDb;
