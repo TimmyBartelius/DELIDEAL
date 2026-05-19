@@ -1,75 +1,123 @@
-// Grön bakgrund för sidomeny och handlar-kort
+// Grön bakgrund för sidomeny och handlar-/produktkort
 .dashboard-green-bg {
-  background-color: #388e3c !important; /* Exakt samma grön som header/footer */
-  color: #fff;
+  background-color: var(--c-forest) !important;
+  color: var(--c-text-on-dark);
+  box-shadow:
+    16px 8px 48px 0 rgba(65, 130, 62, 0.32),
+    8px 4px 24px 0 rgba(0, 0, 0, 0.22);
+}
+
+.dashboard-green-bg.card {
+  box-shadow:
+    16px 8px 48px 0 rgba(65, 130, 62, 0.32),
+    8px 4px 24px 0 rgba(0, 0, 0, 0.22);
+  border: none;
+}
+
+.dashboard-green-bg.card,
+.dashboard-green-bg .card {
+  box-shadow:
+    16px 8px 48px 0 rgba(65, 130, 62, 0.32),
+    8px 4px 24px 0 rgba(0, 0, 0, 0.22);
+}
+
+.dashboard-green-bg .card-title,
+.dashboard-green-bg h5,
+.dashboard-green-bg h2,
+.dashboard-green-bg p,
+.dashboard-green-bg small {
+  color: var(--c-text-on-dark) !important;
 }
 
 // Gör searchbar närmare toppen
 .container-fluid {
   margin-top: 4px !important;
 }
-.dashboard-green-bg.card {
-  box-shadow:
-    16px 8px 48px 0 rgba(56, 142, 60, 0.32),
-    8px 4px 24px 0 rgba(0, 0, 0, 0.22);
-  border: none;
-}
 
-// Sidomeny skugga
-.dashboard-green-bg {
-  box-shadow:
-    16px 8px 48px 0 rgba(56, 142, 60, 0.32),
-    8px 4px 24px 0 rgba(0, 0, 0, 0.22);
-}
-
-// Searchbar skugga
+// Searchbar-rad: tar bort Bootstrap-gutterns synliga kanter
+// genom att inte lägga bakgrund på col-wrappern.
 .dashboard-searchbar-shadow {
-  box-shadow:
-    16px 8px 48px 0 rgba(191, 167, 106, 0.32),
-    8px 4px 24px 0 rgba(0, 0, 0, 0.22);
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.dashboard-searchbar-shadow .form-control {
+  border: none;
   border-radius: 8px;
+  box-shadow:
+    0 4px 16px 0 rgba(0, 0, 0, 0.12),
+    0 1px 4px 0 rgba(0, 0, 0, 0.08);
   background: #fff;
 }
 
-// Handlare-kort och produktkort skugga
-.dashboard-green-bg.card,
-.dashboard-green-bg .card {
-  box-shadow:
-    16px 8px 48px 0 rgba(56, 142, 60, 0.32),
-    8px 4px 24px 0 rgba(0, 0, 0, 0.22);
-}
-
-// Justera textfärg i handlar-kort för kontrast
-.dashboard-green-bg .card-title,
-.dashboard-green-bg h5,
-.dashboard-green-bg h2,
-.dashboard-green-bg p,
-.dashboard-green-bg small {
-  color: #fff !important;
-}
-// Matt, rustik guld bakgrund för hela sidan
-
-// Guld bakgrund på dashboardens huvudyta
+// Sage-bakgrund för hela dashboardytan
 .dashboard-gold-bg-main {
-  background-color: #bfa76a !important;
-  min-height: 100vh;
+  background-color: var(--c-sage) !important;
   width: 100%;
   padding-bottom: 2rem;
 }
-// Guld-aktig bakgrund till välkomstmeddelandet
+
+// Välkomstbanner – transparent, visar sage-bakgrunden
 .dashboard-welcome-gold {
-  background: rgba(0, 0, 0, 0);
-  color: #fff !important;
+  background: transparent;
+  color: var(--c-text-on-light) !important;
   border: none !important;
   border-radius: 12px;
   box-shadow: none;
   margin-bottom: 0.1rem;
   padding: 0.25rem 0.5rem !important;
 }
+
+// Yttre kort som omsluter alla handlare – isblå bakgrund
+.dashboard-merchants-card {
+  background-color: var(--c-mint) !important;
+  border: none;
+}
+
+// ── Hamburgarmeny & mobil drawer ────────────────────────────────────
+.btn-hamburger {
+  background-color: var(--c-forest);
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+// Mörkt halvtransparent overlay som täcker hela skärmen
+.mobile-menu-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1050;
+}
+
+// Drawerpanel som glider in från vänster
+.mobile-menu-drawer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 280px;
+  background-color: var(--c-forest);
+  color: var(--c-text-on-dark);
+  padding: 1.25rem 1rem;
+  overflow-y: auto;
+
+  h5,
+  label,
+  .form-check-label {
+    color: var(--c-text-on-dark) !important;
+  }
+}
 .form-check-input {
   border-radius: 8px;
   border: none;
-  background-color: #f0f0f0;
+  background-color: var(--c-mint);
   width: 20px;
   height: 20px;
   cursor: pointer;
@@ -80,34 +128,23 @@
 }
 
 .form-check-input:hover {
-  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+  box-shadow: 0 0 0 3px rgba(65, 130, 62, 0.25);
 }
 
 .form-check-input:checked {
-  background-color: #28a745;
-}
-
-.form-check-input:checked::after {
-  content: '';
-  position: absolute;
-  left: 6px;
-  top: 2px;
-  width: 5px;
-  height: 10px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
+  background-color: var(--c-dark);
 }
 
 .form-check-input:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.3);
+  box-shadow: 0 0 0 3px rgba(65, 130, 62, 0.3);
 }
 
+// ── Range-slider ────────────────────────────────────────────────────
 input[type='range'] {
   width: 100%;
   height: 6px;
-  background: #dee2e6;
+  background: var(--c-mint);
   border-radius: 3px;
   outline: none;
 }
@@ -117,7 +154,7 @@ input[type='range']::-webkit-slider-thumb {
   appearance: none;
   width: 20px;
   height: 20px;
-  background-color: #28a745;
+  background-color: var(--c-forest);
   border-radius: 50%;
   cursor: pointer;
   transition: background-color 0.2s;
@@ -125,13 +162,13 @@ input[type='range']::-webkit-slider-thumb {
 }
 
 input[type='range']::-webkit-slider-thumb:hover {
-  background-color: scale-color(#28a745, $lightness: -10%);
+  background-color: var(--c-dark);
 }
 
 input[type='range']::-moz-range-thumb {
   width: 20px;
   height: 20px;
-  background-color: #28a745;
+  background-color: var(--c-forest);
   border-radius: 50%;
   cursor: pointer;
   border: none;
@@ -139,13 +176,13 @@ input[type='range']::-moz-range-thumb {
 }
 
 input[type='range']::-moz-range-thumb:hover {
-  background-color: scale-color(#28a745, $lightness: -10%);
+  background-color: var(--c-dark);
 }
 
 input[type='range']::-ms-thumb {
   width: 20px;
   height: 20px;
-  background-color: #28a745;
+  background-color: var(--c-forest);
   border-radius: 50%;
   cursor: pointer;
   border: none;

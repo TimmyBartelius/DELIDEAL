@@ -1,15 +1,3 @@
-  isLightMode = true;
-
-  toggleTheme() {
-    this.isLightMode = !this.isLightMode;
-    if (this.isLightMode) {
-      document.body.classList.remove('dark-mode');
-      document.body.classList.add('light-mode');
-    } else {
-      document.body.classList.remove('light-mode');
-      document.body.classList.add('dark-mode');
-    }
-  }
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
@@ -24,17 +12,20 @@ export class LayoutComponent {
   isLightMode = true;
 
   ngOnInit() {
+    document.documentElement.classList.add('light-mode');
     document.body.classList.add('light-mode');
   }
 
   toggleTheme() {
     this.isLightMode = !this.isLightMode;
+    const html = document.documentElement;
+    const body = document.body;
     if (this.isLightMode) {
-      document.body.classList.remove('dark-mode');
-      document.body.classList.add('light-mode');
+      html.classList.replace('dark-mode', 'light-mode');
+      body.classList.replace('dark-mode', 'light-mode');
     } else {
-      document.body.classList.remove('light-mode');
-      document.body.classList.add('dark-mode');
+      html.classList.replace('light-mode', 'dark-mode');
+      body.classList.replace('light-mode', 'dark-mode');
     }
   }
 }

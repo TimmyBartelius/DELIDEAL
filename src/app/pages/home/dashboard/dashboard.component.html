@@ -1,7 +1,8 @@
 <div class="container-fluid mt-1 dashboard-gold-bg-main">
-  <!-- Sökfält -->
-  <div class="row mb-2">
-    <div class="col-12 position-relative dashboard-searchbar-shadow">
+
+  <!-- Sökfält + hamburgarmeny (hamburgaren syns bara på mobil) -->
+  <div class="row mb-2 align-items-center gx-2">
+    <div class="col position-relative dashboard-searchbar-shadow">
       <input
         type="text"
         class="form-control"
@@ -27,14 +28,68 @@
         </li>
       </ul>
     </div>
+
+    <!-- Hamburgare – döljs på md och upp -->
+    <div class="col-auto d-md-none">
+      <button class="btn-hamburger" (click)="showMobileMenu = true" aria-label="Öppna meny">
+        <svg width="22" height="16" viewBox="0 0 22 16" fill="none">
+          <rect width="22" height="2.5" rx="1.25" fill="white" />
+          <rect y="6.5" width="22" height="2.5" rx="1.25" fill="white" />
+          <rect y="13" width="22" height="2.5" rx="1.25" fill="white" />
+        </svg>
+      </button>
+    </div>
   </div>
+
+  <!-- Mobil drawer-meny (overlay + panel från vänster) -->
+  @if (showMobileMenu) {
+    <div class="mobile-menu-overlay d-md-none" (click)="showMobileMenu = false">
+      <div class="mobile-menu-drawer" (click)="$event.stopPropagation()">
+        <button
+          class="btn-close btn-close-white mb-3 d-block ms-auto"
+          (click)="showMobileMenu = false"
+          aria-label="Stäng"
+        ></button>
+
+        <div class="text-center mb-3">
+          <img
+            [src]="userProfileImage"
+            alt="Profilbild"
+            class="rounded-circle mb-2"
+            width="80"
+            height="80"
+            style="cursor: pointer"
+            (click)="fileInput.click()"
+          />
+          <h5>{{ userName }}</h5>
+        </div>
+
+        <div class="mb-3" *ngIf="selectedMerchant">
+          <label class="form-label">Produktkategorier</label>
+          <div *ngFor="let category of categories" class="form-check">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              [id]="'mob-' + category.category"
+              [(ngModel)]="category.selected"
+              (change)="filterProductsByCategory(); safeDrawMarkers()"
+            />
+            <label class="form-check-label" [for]="'mob-' + category.category">{{
+              category.category
+            }}</label>
+          </div>
+        </div>
+
+        <button class="btn btn-danger w-100 mt-3" (click)="logout()">Logga ut</button>
+      </div>
+    </div>
+  }
 
   <!-- Huvudlayout -->
   <div class="row">
-    <!-- Sidomeny -->
-    <div class="col-md-3">
+    <!-- Sidomeny – döljs på mobil -->
+    <div class="col-md-3 d-none d-md-block">
       <div class="card p-3 mb-3 dashboard-green-bg">
-        <!-- Profil -->
         <div class="text-center mb-3">
           <img
             [src]="userProfileImage"
@@ -55,7 +110,6 @@
           <h5>{{ userName }}</h5>
         </div>
 
-        <!-- Checkboxes -->
         <div class="mb-3" *ngIf="selectedMerchant">
           <label class="form-label">Produktkategorier</label>
           <div *ngFor="let category of categories" class="form-check">
@@ -72,38 +126,37 @@
           </div>
         </div>
 
-        <!-- Logout-knapp -->
         <button class="btn btn-danger w-100 mt-3" (click)="logout()">Logga ut</button>
       </div>
     </div>
 
     <!-- Huvudinnehåll -->
-    <div class="col-md-9">
-      <div class="dashboard-welcome-gold p-3 mb-3">
+    <div class="col-md-9 col-12">
+      <!-- Välkommen-banner – döljs på mobil och när en handlare är vald -->
+      <div *ngIf="!selectedMerchant" class="dashboard-welcome-gold p-3 mb-3 d-none d-md-block">
         <h2>Välkommen till DeliDeal!</h2>
       </div>
 
       <!-- PRODUKTOMRÅDE -->
-      <div class="card p-3">
+      <div [ngClass]="selectedMerchant ? 'p-0' : 'card p-2 dashboard-merchants-card'">
         <!-- Handlare-lista -->
         <div *ngIf="!selectedMerchant && filteredMerchants.length > 0">
-          <h5>Handlare som matchar din sökning:</h5>
-          <div class="row">
-            <div class="col-md-6 mb-3" *ngFor="let merchant of filteredMerchants">
+          <div class="row g-2 merchants-row">
+            <div class="col-md-4" *ngFor="let merchant of filteredMerchants">
               <div
-                class="card h-100 p-3 text-center dashboard-green-bg"
+                class="card h-100 p-2 text-center dashboard-green-bg"
                 (click)="selectMerchant(merchant)"
-                style="cursor: pointer; transform: scale(1.02)"
+                style="cursor: pointer"
               >
-                <h5>{{ merchant.name }}</h5>
+                <h6 class="mb-1">{{ merchant.name }}</h6>
                 <img
                   [src]="merchant.image || 'assets/logo.png'"
                   alt="{{ merchant.name }}"
-                  class="card-img-top"
-                  style="height: 150px; object-fit: cover"
+                  class="card-img-top my-1"
+                  style="height: 80px; object-fit: cover"
                 />
-                <p class="mb-1">{{ merchant.city }}</p>
-                <p class="text-muted">{{ merchant.address }}</p>
+                <p class="mb-0 small">{{ merchant.city }}</p>
+                <p class="mb-0 small text-muted">{{ merchant.address }}</p>
                 <small class="text-muted">{{ merchant.products.length }} produkter</small>
               </div>
             </div>
@@ -126,7 +179,7 @@
             <p>{{ selectedMerchant.address }}, {{ selectedMerchant.city }}</p>
             <p>{{ selectedMerchant.productsFiltered?.length }} produkter tillgängliga:</p>
             <button class="btn btn-secondary btn-sm mb-2" (click)="selectedMerchant = null">
-              Gå tillbaka
+              ← Gå tillbaka
             </button>
 
             <div class="row">

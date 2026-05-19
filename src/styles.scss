@@ -1,3 +1,33 @@
+// ════════════════════════════════════════════════════════════════════
+// CENTRALISERAD FÄRGPALETT
+// Källa: Adobe Color – "My Color Theme"
+// Byt färg HÄR för att ändra den i hela projektet.
+// ════════════════════════════════════════════════════════════════════
+:root {
+  // ── Ljust läge ──────────────────────────────────────────────────
+  --c-forest:   #41823e;   // header, footer, fokusringar
+  --c-dark:     #374f36;   // primärknappar (ska tryckas), tung text
+  --c-sage:     #d0eaf8;   // sidbakgrund, subtila ytor
+  --c-mint:     #a8d4f0;   // card-bakgrund, hover-states
+  --c-lime:     #8bff85;   // sekundärknappar (kan tryckas)
+  --c-danger:   #a93226;   // destruktiva knappar, t.ex. Logga ut
+  --c-back:     #7a3d3d;   // tillbaka-knappar, mattare röd än danger
+
+  // ── Mörkt läge ──────────────────────────────────────────────────
+  --c-dm-bg:      #163016;   // bakgrund (mörkast)
+  --c-dm-header:  #213d20;   // header & footer
+  --c-dm-surface: #323831;   // kort, panels
+  --c-dm-raised:  #374f36;   // upphöjda ytor, sidomeny
+  --c-dm-hover:   #476146;   // hover-states, lätt markering
+
+  // ── Textfärger ──────────────────────────────────────────────────
+  --c-text-on-dark:   #ffffff;   // text på mörk/grön bakgrund
+  --c-text-on-light:  #374f36;   // text på ljus bakgrund
+  --c-dm-text:        #e4e4e4;   // huvudtext i dark mode
+  --c-dm-muted:       #9aaa9a;   // dämpad text i dark mode
+}
+
+// ── Grundlayout ─────────────────────────────────────────────────────
 header,
 footer {
   border: none !important;
@@ -11,10 +41,214 @@ body {
   border: none !important;
   box-shadow: none !important;
   outline: none !important;
+  min-height: 100vh;
+  background-color: var(--c-sage) !important;
+  color: var(--c-text-on-light);
 }
 
-html,
-body {
-  min-height: 100vh;
-  background-color: #bfa76a !important; /* matt, varm guldbrun */
+// Bootstrap bg-light (login/register-sidor) → sage-bakgrund
+.bg-light {
+  background-color: var(--c-sage) !important;
+}
+
+// ── Primärknappar – "ska tryckas" (mörk grön) ────────────────────────
+.btn-success,
+.btn-primary {
+  background-color: var(--c-dark) !important;
+  border-color: var(--c-dark) !important;
+  color: var(--c-text-on-dark) !important;
+
+  &:hover,
+  &:focus,
+  &:active,
+  &.active {
+    background-color: var(--c-forest) !important;
+    border-color: var(--c-forest) !important;
+    color: var(--c-text-on-dark) !important;
+  }
+
+  &:disabled,
+  &.disabled {
+    background-color: var(--c-dark) !important;
+    border-color: var(--c-dark) !important;
+    color: var(--c-text-on-dark) !important;
+    opacity: 0.5;
+  }
+}
+
+// ── Sekundärknappar – "kan tryckas" (ljus lime) ───────────────────────
+.btn-outline-primary {
+  background-color: var(--c-lime) !important;
+  border-color: var(--c-lime) !important;
+  color: var(--c-text-on-light) !important;
+
+  &:hover,
+  &:focus,
+  &:active {
+    background-color: var(--c-mint) !important;
+    border-color: var(--c-mint) !important;
+    color: var(--c-text-on-light) !important;
+  }
+
+  &:disabled,
+  &.disabled {
+    background-color: var(--c-lime) !important;
+    opacity: 0.5;
+  }
+}
+
+// ── Tillbaka-knappar – mattare röd ───────────────────────────────────
+.btn-secondary {
+  background-color: var(--c-back) !important;
+  border-color: color-mix(in srgb, var(--c-back) 80%, black) !important;
+  color: #fff !important;
+
+  &:hover,
+  &:focus,
+  &:active {
+    background-color: color-mix(in srgb, var(--c-back) 75%, black) !important;
+    color: #fff !important;
+  }
+
+  &:disabled,
+  &.disabled {
+    background-color: var(--c-back) !important;
+    opacity: 0.5;
+  }
+}
+
+// ── Destruktiva knappar – matt röd ───────────────────────────────────
+.btn-danger {
+  background-color: var(--c-danger) !important;
+  border-color: color-mix(in srgb, var(--c-danger) 80%, black) !important;
+  color: #fff !important;
+
+  &:hover,
+  &:focus,
+  &:active {
+    background-color: color-mix(in srgb, var(--c-danger) 75%, black) !important;
+    border-color: color-mix(in srgb, var(--c-danger) 65%, black) !important;
+    color: #fff !important;
+  }
+
+  &:disabled,
+  &.disabled {
+    background-color: var(--c-danger) !important;
+    opacity: 0.5;
+  }
+}
+
+// ── Formulär – fokusring ──────────────────────────────────────────────
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--c-forest) !important;
+  box-shadow: 0 0 0 0.25rem rgba(65, 130, 62, 0.3) !important;
+}
+
+// ── Laddningsindikator & text-primary ────────────────────────────────
+.text-primary,
+.spinner-border.text-primary {
+  color: var(--c-forest) !important;
+}
+
+// ── Alert-info → sage-ton ────────────────────────────────────────────
+.alert-info {
+  background-color: var(--c-mint) !important;
+  border-color: var(--c-forest) !important;
+  color: var(--c-text-on-light) !important;
+}
+
+// ── Länkfärger ────────────────────────────────────────────────────────
+a {
+  color: var(--c-forest);
+
+  &:hover {
+    color: var(--c-dark);
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════
+// DARK MODE – globala overrides
+// Aktiveras av html.dark-mode + body.dark-mode (sätts i layout.ts)
+// ════════════════════════════════════════════════════════════════════
+
+// Steg 1: Remap CSS-variabler så ALLT som använder dem byter automatiskt.
+// Gäller body och alla dess descendants (inte html, därför täcker vi html separat).
+body.dark-mode {
+  --c-sage:          #163016;
+  --c-mint:          #323831;
+  --c-text-on-light: #e4e4e4;
+  --c-forest:        #476146;
+}
+
+// Steg 2: Bakgrundsfix för html + body explicit (variabler räcker inte för html)
+html.dark-mode,
+body.dark-mode {
+  background-color: #163016 !important;
+  color: #e4e4e4 !important;
+}
+
+// Steg 3: Bootstrap-element som har hårdkodade vita/ljusa bakgrunder
+body.dark-mode .card {
+  background-color: #323831 !important;
+  color: #e4e4e4 !important;
+  border-color: #374f36 !important;
+}
+
+body.dark-mode .form-control,
+body.dark-mode .form-select {
+  background-color: #374f36 !important;
+  color: #e4e4e4 !important;
+  border-color: #476146 !important;
+}
+
+body.dark-mode .form-control::placeholder {
+  color: #9aaa9a !important;
+}
+
+body.dark-mode .form-label,
+body.dark-mode label {
+  color: #e4e4e4 !important;
+}
+
+body.dark-mode .list-group-item {
+  background-color: #323831 !important;
+  color: #e4e4e4 !important;
+  border-color: #374f36 !important;
+}
+
+body.dark-mode .list-group-item:hover {
+  background-color: #476146 !important;
+}
+
+body.dark-mode .text-muted {
+  color: #9aaa9a !important;
+}
+
+body.dark-mode h2,
+body.dark-mode h4,
+body.dark-mode h5,
+body.dark-mode h6,
+body.dark-mode p,
+body.dark-mode small {
+  color: #e4e4e4;
+}
+
+body.dark-mode a {
+  color: #476146;
+}
+body.dark-mode a:hover {
+  color: #e4e4e4;
+}
+
+body.dark-mode .alert-info {
+  background-color: #323831 !important;
+  border-color: #476146 !important;
+  color: #e4e4e4 !important;
+}
+
+body.dark-mode .alert-danger {
+  background-color: #3d1a1a !important;
+  border-color: #7a3d3d !important;
+  color: #f0c0c0 !important;
 }

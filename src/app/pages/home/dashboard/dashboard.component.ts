@@ -134,6 +134,7 @@ export class DashboardComponent implements OnInit {
 
   allProductNames: string[] = [];
   showSuggestions: boolean = false;
+  showMobileMenu: boolean = false;
 
   constructor(
     private userService: UserService,

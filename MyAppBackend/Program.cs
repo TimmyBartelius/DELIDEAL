@@ -6,9 +6,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using MyAppBackend;
 using MyAppBackend.Auth;
+using MyAppBackend.Services;
 using System;
-using Microsoft.VisualBasic;
-using System.Net.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,6 +54,11 @@ builder.Services.AddSingleton(firestoreDb);
 
 // ===== Lägg till vår "databas"/tjänster =====
 builder.Services.AddSingleton<IUserProfileService, UserProfileService>();
+builder.Services.AddSingleton<MerchantService>();
+builder.Services.AddSingleton<ProductService>();
+builder.Services.AddSingleton<OfferService>();
+builder.Services.AddSingleton<FavoriteService>();
+builder.Services.AddSingleton<PriceAlertService>();
 
 // ===== JWT-konfiguration =====
 var key = Encoding.ASCII.GetBytes("this-is-a-very-long-super-secret-key-1234567890!"); 

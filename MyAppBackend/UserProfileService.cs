@@ -18,6 +18,13 @@ namespace MyAppBackend
         Task<UserProfile?> RegisterUser(string username, string email, string password, string role = "customer");
         Task SaveProfilePicture(string userId, string base64Image);
         Task DeleteAllUsers();
+        Task<List<UserProfile>> GetAllUsersAsync();
+        Task DeleteUserAsync(string userId);
+        Task UpdateUserAsync(string userId, Dictionary<string, object> fields);
+        Task<bool> IsUserNameTakenAsync(string userName, string excludeUserId);
+        Task StorePasswordChangeTokenAsync(string userId, string token);
+        Task<bool> ValidatePasswordChangeTokenAsync(string userId, string token);
+        Task ChangePasswordAsync(string userId, string newPassword);
     }
 
     public class UserProfileService : IUserProfileService
@@ -138,6 +145,66 @@ namespace MyAppBackend
 
             var picturesRef = _firestore!.Collection("profilePictures");
             await picturesRef.Document(userId).SetAsync(new { base64Image });
+        }
+
+        public async Task<List<UserProfile>> GetAllUsersAsync()
+        {
+            EnsureFirestore();
+            var snapshot = await _firestore!.Collection("users").GetSnapshotAsync();
+            return snapshot.Documents.Select(d => d.ConvertTo<UserProfile>()).ToList();
+        }
+
+        public async Task DeleteUserAsync(string userId)
+        {
+            EnsureFirestore();
+            await _firestore!.Collection("users").Document(userId).DeleteAsync();
+        }
+
+        public async Task UpdateUserAsync(string userId, Dictionary<string, object> fields)
+        {
+            EnsureFirestore();
+            await _firestore!.Collection("users").Document(userId).UpdateAsync(
+                fields.ToDictionary(f => f.Key, f => f.Value));
+        }
+
+        public async Task<bool> IsUserNameTakenAsync(string userName, string excludeUserId)
+        {
+            EnsureFirestore();
+            var snapshot = await _firestore!.Collection("users").WhereEqualTo("UserName", userName).GetSnapshotAsync();
+            return snapshot.Documents.Any(d => d.Id != excludeUserId);
+        }
+
+        public async Task StorePasswordChangeTokenAsync(string userId, string token)
+        {
+            EnsureFirestore();
+            await _firestore!.Collection("users").Document(userId).UpdateAsync(new Dictionary<string, object>
+            {
+                { "PasswordChangeToken", token },
+                { "PasswordChangeTokenExpires", DateTime.UtcNow.AddMinutes(30) }
+            });
+        }
+
+        public async Task<bool> ValidatePasswordChangeTokenAsync(string userId, string token)
+        {
+            EnsureFirestore();
+            var doc = await _firestore!.Collection("users").Document(userId).GetSnapshotAsync();
+            if (!doc.Exists) return false;
+            var user = doc.ConvertTo<UserProfile>();
+            return user.PasswordChangeToken == token &&
+                   user.PasswordChangeTokenExpires.HasValue &&
+                   user.PasswordChangeTokenExpires.Value > DateTime.UtcNow;
+        }
+
+        public async Task ChangePasswordAsync(string userId, string newPassword)
+        {
+            EnsureFirestore();
+            var hashed = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            await _firestore!.Collection("users").Document(userId).UpdateAsync(new Dictionary<string, object>
+            {
+                { "Password", hashed },
+                { "PasswordChangeToken", "" },
+                { "PasswordChangeTokenExpires", DateTime.MinValue }
+            });
         }
     }
 }

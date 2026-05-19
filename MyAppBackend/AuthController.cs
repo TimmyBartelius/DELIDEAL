@@ -1,8 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using MyAppBackend.Auth;
 
 namespace MyAppBackend.Controllers
@@ -20,20 +16,16 @@ namespace MyAppBackend.Controllers
         }
         private readonly IUserProfileService _service;
         private readonly Auth.RefreshTokenService _refreshTokenService;
-        private readonly Google.Cloud.Firestore.FirestoreDb _firestore;
-
-        private readonly byte[] _key =
-            Encoding.ASCII.GetBytes(
-                "this-is-a-very-long-super-secret-key-1234567890!");
+        private readonly TokenService _tokenService;
 
         private static MyAppBackend.RateLimiter _loginLimiter = new MyAppBackend.RateLimiter(5, TimeSpan.FromMinutes(1));
         private static MyAppBackend.RateLimiter _registerLimiter = new MyAppBackend.RateLimiter(1000, TimeSpan.FromMinutes(5));
 
-        public AuthController(IUserProfileService service, Google.Cloud.Firestore.FirestoreDb firestore)
+        public AuthController(IUserProfileService service, Google.Cloud.Firestore.FirestoreDb firestore, TokenService tokenService)
         {
             _service = service;
-            _firestore = firestore;
-            _refreshTokenService = new Auth.RefreshTokenService(_firestore);
+            _refreshTokenService = new Auth.RefreshTokenService(firestore);
+            _tokenService = tokenService;
         }
 
         [HttpPost("login")]
@@ -48,8 +40,8 @@ namespace MyAppBackend.Controllers
                 if (user == null)
                     return Unauthorized("Invalid email or password.");
 
-                var accessToken = GenerateJwtToken(user);
-                var refreshToken = GenerateRefreshToken();
+                var accessToken = _tokenService.GenerateAccessToken(user.Id, user.Role ?? "customer");
+                var refreshToken = _tokenService.GenerateRefreshToken();
 
                 var refreshTokenObj = new RefreshToken
                 {
@@ -125,8 +117,8 @@ namespace MyAppBackend.Controllers
                     return BadRequest("Email is already registered.");
                 }
 
-                var accessToken = GenerateJwtToken(user);
-                var refreshToken = GenerateRefreshToken();
+                var accessToken = _tokenService.GenerateAccessToken(user.Id, user.Role ?? "customer");
+                var refreshToken = _tokenService.GenerateRefreshToken();
 
                 var refreshTokenObj = new RefreshToken
                 {
@@ -160,8 +152,10 @@ namespace MyAppBackend.Controllers
             if (storedToken == null || storedToken.Expires < DateTime.UtcNow)
                 return Unauthorized();
 
-            var user = new UserProfile { Id = storedToken.UserId };
-            var newAccessToken = GenerateJwtToken(user);
+            var user = await _service.GetProfile(storedToken.UserId);
+            if (user == null) return Unauthorized();
+
+            var newAccessToken = _tokenService.GenerateAccessToken(user.Id, user.Role ?? "customer");
             return Ok(new { token = newAccessToken });
         }
 
@@ -175,29 +169,7 @@ namespace MyAppBackend.Controllers
             return Ok(new { message = "Logout successful." });
         }
 
-        private string GenerateJwtToken(UserProfile user)
-        {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new[]
-                {
-                    new Claim("id", user.Id)
-                }),
-                Expires = DateTime.UtcNow.AddHours(1),
-                SigningCredentials = new SigningCredentials(
-                    new SymmetricSecurityKey(_key),
-                    SecurityAlgorithms.HmacSha256Signature)
-            };
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
         }
-
-        private string GenerateRefreshToken()
-        {
-            return Guid.NewGuid().ToString();
-        }
-    }
 
     public class LoginDto
     {

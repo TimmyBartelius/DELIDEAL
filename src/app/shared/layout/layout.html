@@ -9,42 +9,21 @@
       (click)="toggleTheme()"
       aria-label="Toggle dark/light mode"
     >
-      <span *ngIf="isLightMode" class="theme-icon">
-        <!-- Filled sun for light mode -->
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="28"
-          height="28"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <circle cx="12" cy="12" r="5" fill="#ffc107" />
-          <path
-            stroke="#ffc107"
-            stroke-width="2"
-            d="M12 1v2m0 18v2m11-9h-2M3 12H1m16.95 6.95-1.41-1.41M6.46 6.46 5.05 5.05m12.02 0-1.41 1.41M6.46 17.54l-1.41 1.41"
-          />
-        </svg>
-      </span>
-      <span *ngIf="!isLightMode" class="theme-icon">
-        <!-- Outlined sun for dark mode -->
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="28"
-          height="28"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <circle cx="12" cy="12" r="5" fill="none" stroke="#bfa76a" stroke-width="2" />
-          <path
-            stroke="#bfa76a"
-            stroke-width="2"
-            d="M12 1v2m0 18v2m11-9h-2M3 12H1m16.95 6.95-1.41-1.41M6.46 6.46 5.05 5.05m12.02 0-1.41 1.41M6.46 17.54l-1.41 1.41"
-          />
-        </svg>
-      </span>
+      @if (isLightMode) {
+        <span class="theme-icon">
+          <!-- Fylld cirkel = light mode -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="7" fill="currentColor" />
+          </svg>
+        </span>
+      } @else {
+        <span class="theme-icon">
+          <!-- Kontur-cirkel = dark mode -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="7" stroke="currentColor" stroke-width="2.5" />
+          </svg>
+        </span>
+      }
     </button>
   </header>
 

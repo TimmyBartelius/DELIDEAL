@@ -2,7 +2,7 @@
   background: none;
   border: none;
   outline: none;
-  color: #fff;
+  color: var(--c-text-on-dark);
   margin-left: auto;
   transition: color 0.2s;
 }
@@ -11,32 +11,49 @@
   display: block;
 }
 
+// ── Mörkt läge ──────────────────────────────────────────────────────
+html.dark-mode,
 body.dark-mode {
-  background-color: #181818 !important;
+  background-color: #163016 !important;
 }
+
 body.dark-mode .header,
 body.dark-mode .footer {
-  background-color: #232323 !important;
-  color: #eee !important;
+  background-color: #213d20 !important;
+  color: #fff !important;
 }
+
 body.dark-mode .content {
-  background-color: #181818 !important;
-  color: #eee !important;
+  background-color: #163016 !important;
+  color: #e4e4e4 !important;
 }
+
 body.dark-mode .dashboard-green-bg,
 body.dark-mode .dashboard-green-bg.card,
 body.dark-mode .dashboard-green-bg .card {
-  background-color: #444 !important;
-  color: #eee !important;
+  background-color: #374f36 !important;
+  color: #e4e4e4 !important;
 }
-body.dark-mode .card,
+
 body.dark-mode .dashboard-gold-bg-main {
-  background-color: #232323 !important;
-  color: #eee !important;
+  background-color: #163016 !important;
 }
+
+body.dark-mode .dashboard-merchants-card {
+  background-color: #323831 !important;
+}
+
+body.dark-mode .mobile-menu-drawer {
+  background-color: #374f36 !important;
+}
+
+// ── Ljust läge ───────────────────────────────────────────────────────
+html.light-mode,
 body.light-mode {
-  background-color: #bfa76a !important;
+  background-color: var(--c-sage) !important;
 }
+
+// ── Header & footer ──────────────────────────────────────────────────
 .header {
   height: 60px;
   padding: 0 20px;
@@ -44,12 +61,15 @@ body.light-mode {
 
 .content {
   padding: 20px;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .footer {
   height: 60px;
 }
+
 .header,
 .footer {
-  background-color: #41823e;
+  background-color: var(--c-forest);
 }
