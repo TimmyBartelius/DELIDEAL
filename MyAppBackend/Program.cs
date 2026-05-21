@@ -36,20 +36,30 @@ builder.Services.AddControllers()
 Google.Cloud.Firestore.FirestoreDb firestoreDb;
 try
 {
-    // Produktionsmiljö (Render): Firebase-nyckeln läses från miljövariabeln GOOGLE_CREDENTIALS_JSON
-    // Lokalt: läses från Firebase/firebase-key.json
-    var credentialsJson = Environment.GetEnvironmentVariable("GOOGLE_CREDENTIALS_JSON");
+    // Sökordning: Render Secret File → miljövariabel → lokal fil
+    var secretFilePath = "/etc/secrets/firebase-key.json";
     string credentialPath;
-    if (!string.IsNullOrEmpty(credentialsJson))
+
+    if (File.Exists(secretFilePath))
     {
-        credentialPath = Path.Combine(Path.GetTempPath(), "firebase-key.json");
-        File.WriteAllText(credentialPath, credentialsJson);
+        // Render Secret File (rekommenderat i produktion)
+        credentialPath = secretFilePath;
     }
     else
     {
-        credentialPath = Path.GetFullPath("Firebase/firebase-key.json");
-        if (!File.Exists(credentialPath))
-            throw new Exception($"Firebase credential not found at {credentialPath}");
+        var credentialsJson = Environment.GetEnvironmentVariable("GOOGLE_CREDENTIALS_JSON");
+        if (!string.IsNullOrEmpty(credentialsJson))
+        {
+            credentialPath = Path.Combine(Path.GetTempPath(), "firebase-key.json");
+            File.WriteAllText(credentialPath, credentialsJson);
+        }
+        else
+        {
+            // Lokal utveckling
+            credentialPath = Path.GetFullPath("Firebase/firebase-key.json");
+            if (!File.Exists(credentialPath))
+                throw new Exception($"Firebase credential not found at {credentialPath}");
+        }
     }
 
     Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", credentialPath);
