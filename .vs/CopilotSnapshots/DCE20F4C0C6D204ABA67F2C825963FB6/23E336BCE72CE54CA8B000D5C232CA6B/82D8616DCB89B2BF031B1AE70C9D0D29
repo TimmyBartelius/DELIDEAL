@@ -1,0 +1,210 @@
+﻿// ...removed duplicate method at file top...
+using System;
+using System.Threading.Tasks;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
+using Google.Cloud.Firestore;
+using BCrypt.Net;
+using System.Text;
+using System.Linq.Expressions;
+
+namespace MyAppBackend
+{
+    public interface IUserProfileService
+    {
+        Task<UserProfile?> GetProfile(string userId);
+        Task<string?> GetProfilePicture(string userId);
+        Task<UserProfile?> ValidateUser(string email, string password);
+        Task<UserProfile?> RegisterUser(string username, string email, string password, string role = "customer");
+        Task SaveProfilePicture(string userId, string base64Image);
+        Task DeleteAllUsers();
+        Task<List<UserProfile>> GetAllUsersAsync();
+        Task DeleteUserAsync(string userId);
+        Task UpdateUserAsync(string userId, Dictionary<string, object> fields);
+        Task<bool> IsUserNameTakenAsync(string userName, string excludeUserId);
+        Task StorePasswordChangeTokenAsync(string userId, string token);
+        Task<bool> ValidatePasswordChangeTokenAsync(string userId, string token);
+        Task ChangePasswordAsync(string userId, string newPassword);
+    }
+
+    public class UserProfileService : IUserProfileService
+    {
+        public const string DefaultProfilePictureBase64 = "iVBORw0KGgoAAAANSUhEUgAAAF4AAABeCAYAAACq0qNuAAA...";
+        private readonly FirestoreDb? _firestore;
+
+        public UserProfileService(FirestoreDb firestore)
+        {
+            _firestore = firestore;
+        }
+
+
+        public async Task DeleteAllUsers()
+        {
+            EnsureFirestore();
+            var usersRef = _firestore!.Collection("users");
+            var snapshot = await usersRef.GetSnapshotAsync();
+            foreach (var doc in snapshot.Documents)
+            {
+                await doc.Reference.DeleteAsync();
+            }
+        }
+
+        private void EnsureFirestore()
+        {
+            if (_firestore == null)
+                throw new Exception("Firestore is not initialized. Check firebase-key.json and project ID.");
+        }
+
+        public async Task<UserProfile?> GetProfile(string userId)
+        {
+            EnsureFirestore();
+
+            var docRef = _firestore!.Collection("users").Document(userId);
+            var snapshot = await docRef.GetSnapshotAsync();
+            if (!snapshot.Exists) return null;
+            return snapshot.ConvertTo<UserProfile>();
+        }
+
+        public async Task<string?> GetProfilePicture(string userId)
+        {
+            EnsureFirestore();
+
+            var docRef = _firestore!.Collection("profilePictures").Document(userId);
+            var snapshot = await docRef.GetSnapshotAsync();
+            if (!snapshot.Exists) return DefaultProfilePictureBase64;
+            return snapshot.GetValue<string>("base64Image");
+        }
+
+        public async Task<UserProfile?> ValidateUser(string email, string password)
+        {
+            EnsureFirestore();
+
+            var usersRef = _firestore!.Collection("users");
+            var snapshot = await usersRef.WhereEqualTo("Email", email).GetSnapshotAsync();
+
+            foreach (var doc in snapshot.Documents)
+            {
+                var user = doc.ConvertTo<UserProfile>();
+                if (user.Password != null && BCrypt.Net.BCrypt.Verify(password, user.Password))
+                {
+                    user.Password = null;
+                    return user;
+                }
+            }
+
+            return null;
+        }
+
+        public async Task<UserProfile?> RegisterUser(string username, string email, string password, string role = "customer")
+        {
+            EnsureFirestore();
+
+            try
+            {
+                var usersRef = _firestore!.Collection("users");
+                var existing = await usersRef.WhereEqualTo("Email", email).GetSnapshotAsync();
+                if (existing.Count > 0) return null;
+
+                var newUser = new UserProfile
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    UserName = username,
+                    Email = email,
+                    Password = BCrypt.Net.BCrypt.HashPassword(password),
+                    Role = role
+                };
+
+                await usersRef.Document(newUser.Id).SetAsync(newUser);
+
+                newUser.Password = null; 
+                return newUser;
+            }
+            catch (Exception ex)
+            {
+                // Logga för felsökning
+                Console.WriteLine("Failed to register user: " + ex);
+                throw; 
+            }
+        }
+
+        public async Task SaveProfilePicture(string userId, string base64Image)
+        {
+            EnsureFirestore();
+            Console.WriteLine($"Saving profile picture for user {userId}, length {base64Image.Length}");
+
+            if(string.IsNullOrWhiteSpace(base64Image))
+            throw new Exception("No image provided!");
+
+            //Strip data:image/...precfix
+            var commaIndex = base64Image.IndexOf(",");
+            if (commaIndex >= 0)
+            base64Image = base64Image.Substring(commaIndex + 1);
+
+            if(Encoding.UTF8.GetByteCount(base64Image) > 900_000)
+            throw new Exception("Image too large for Firestore!");
+
+            var picturesRef = _firestore!.Collection("profilePictures");
+            await picturesRef.Document(userId).SetAsync(new { base64Image });
+        }
+
+        public async Task<List<UserProfile>> GetAllUsersAsync()
+        {
+            EnsureFirestore();
+            var snapshot = await _firestore!.Collection("users").GetSnapshotAsync();
+            return snapshot.Documents.Select(d => d.ConvertTo<UserProfile>()).ToList();
+        }
+
+        public async Task DeleteUserAsync(string userId)
+        {
+            EnsureFirestore();
+            await _firestore!.Collection("users").Document(userId).DeleteAsync();
+        }
+
+        public async Task UpdateUserAsync(string userId, Dictionary<string, object> fields)
+        {
+            EnsureFirestore();
+            await _firestore!.Collection("users").Document(userId).UpdateAsync(
+                fields.ToDictionary(f => f.Key, f => f.Value));
+        }
+
+        public async Task<bool> IsUserNameTakenAsync(string userName, string excludeUserId)
+        {
+            EnsureFirestore();
+            var snapshot = await _firestore!.Collection("users").WhereEqualTo("UserName", userName).GetSnapshotAsync();
+            return snapshot.Documents.Any(d => d.Id != excludeUserId);
+        }
+
+        public async Task StorePasswordChangeTokenAsync(string userId, string token)
+        {
+            EnsureFirestore();
+            await _firestore!.Collection("users").Document(userId).UpdateAsync(new Dictionary<string, object>
+            {
+                { "PasswordChangeToken", token },
+                { "PasswordChangeTokenExpires", DateTime.UtcNow.AddMinutes(30) }
+            });
+        }
+
+        public async Task<bool> ValidatePasswordChangeTokenAsync(string userId, string token)
+        {
+            EnsureFirestore();
+            var doc = await _firestore!.Collection("users").Document(userId).GetSnapshotAsync();
+            if (!doc.Exists) return false;
+            var user = doc.ConvertTo<UserProfile>();
+            return user.PasswordChangeToken == token &&
+                   user.PasswordChangeTokenExpires.HasValue &&
+                   user.PasswordChangeTokenExpires.Value > DateTime.UtcNow;
+        }
+
+        public async Task ChangePasswordAsync(string userId, string newPassword)
+        {
+            EnsureFirestore();
+            var hashed = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            await _firestore!.Collection("users").Document(userId).UpdateAsync(new Dictionary<string, object>
+            {
+                { "Password", hashed },
+                { "PasswordChangeToken", "" },
+                { "PasswordChangeTokenExpires", DateTime.MinValue }
+            });
+        }
+    }
+}
