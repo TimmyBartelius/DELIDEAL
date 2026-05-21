@@ -8,6 +8,7 @@ export interface AuthResponse {
   refreshToken: string;
   userId: string;
   userName: string;
+  role: string;
 }
 
 @Injectable({
@@ -18,6 +19,8 @@ export class AuthService {
   private readonly ACCOUNT_URL = `${this.API_BASE}/account`;
   private readonly TOKEN_KEY = 'access_token';
   private readonly REFRESH_KEY = 'refresh_token';
+  private readonly ROLE_KEY = 'user_role';
+  private readonly USERNAME_KEY = 'user_name';
 
   constructor(private http: HttpClient) {}
 
@@ -27,17 +30,43 @@ export class AuthService {
       tap((res) => {
         localStorage.setItem(this.TOKEN_KEY, res.token);
         localStorage.setItem(this.REFRESH_KEY, res.refreshToken);
+        localStorage.setItem(this.ROLE_KEY, res.role ?? 'customer');
+        localStorage.setItem(this.USERNAME_KEY, res.userName ?? '');
       }),
     );
   }
 
   // --- LOGOUT ---
   logout() {
+    const token = localStorage.getItem(this.TOKEN_KEY);
+    // Rensa localStorage SYNKRONT direkt – UI uppdateras omedelbart
     localStorage.clear();
+    // Anropa backend för att invalidera refresh-token (fire-and-forget)
+    this.http
+      .post(
+        `${this.API_BASE}/auth/logout`,
+        {},
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        },
+      )
+      .subscribe({ next: () => {}, error: () => {} });
   }
 
   get isLoggedIn(): boolean {
     return !!localStorage.getItem(this.TOKEN_KEY);
+  }
+
+  getUserRole(): string {
+    return localStorage.getItem(this.ROLE_KEY) ?? 'customer';
+  }
+
+  get isAdmin(): boolean {
+    return this.getUserRole() === 'admin';
+  }
+
+  get isMerchant(): boolean {
+    return this.getUserRole() === 'merchant';
   }
 
   getAccessToken(): string | null {
@@ -76,17 +105,17 @@ export class AuthService {
 
   getProfilePicture() {
     return this.http
-      .get(`${this.API_BASE}/account/profile-picture`, {
-        responseType: 'blob',
-      })
-      .pipe(map((blob) => URL.createObjectURL(blob)));
+      .get<{ base64: string }>(`${this.API_BASE}/account/profile-picture`)
+      .pipe(map((res) => res.base64));
   }
 
   saveProfilePicture(base64: string): Observable<any> {
-    return this.http.put(`${this.ACCOUNT_URL}/profile-picture`, JSON.stringify(base64), {
-      headers: {
-        'Content-Type': 'application/json',
+    return this.http.put(
+      `${this.ACCOUNT_URL}/profile-picture`,
+      { base64 },
+      {
+        headers: { 'Content-Type': 'application/json' },
       },
-    });
+    );
   }
 }

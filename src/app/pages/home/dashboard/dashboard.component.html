@@ -1,7 +1,18 @@
-<div class="container-fluid mt-3">
-  <!-- Sökfält -->
-  <div class="row mb-3">
-    <div class="col-12 position-relative">
+<div class="container-fluid mt-1 dashboard-gold-bg-main">
+  <!-- Sökfält + hamburgarmeny (hamburgaren syns bara på mobil) -->
+  <div class="row mb-2 align-items-center gx-2">
+    <!-- Hamburgare – döljs på md och upp -->
+    <div class="col-auto d-md-none">
+      <button class="btn-hamburger" (click)="showMobileMenu = true" aria-label="Öppna meny">
+        <svg width="22" height="16" viewBox="0 0 22 16" fill="none">
+          <rect width="22" height="2.5" rx="1.25" fill="white" />
+          <rect y="6.5" width="22" height="2.5" rx="1.25" fill="white" />
+          <rect y="13" width="22" height="2.5" rx="1.25" fill="white" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="col position-relative dashboard-searchbar-shadow">
       <input
         type="text"
         class="form-control"
@@ -29,12 +40,121 @@
     </div>
   </div>
 
+  <!-- Mobil drawer-meny (overlay + panel från vänster) -->
+  @if (showMobileMenu) {
+    <div class="mobile-menu-overlay d-md-none" (click)="showMobileMenu = false">
+      <div class="mobile-menu-drawer" (click)="$event.stopPropagation()">
+        <button
+          class="btn-close btn-close-white mb-3 d-block ms-auto"
+          (click)="showMobileMenu = false"
+          aria-label="Stäng"
+        ></button>
+
+        <div class="text-center mb-3">
+          <img
+            [src]="userProfileImage"
+            alt="Profilbild"
+            class="rounded-circle mb-2"
+            width="80"
+            height="80"
+            style="cursor: pointer"
+            (click)="fileInput.click()"
+          />
+          <h5>{{ userName }}</h5>
+          <small class="text-muted">Klicka på bilden för att byta</small>
+        </div>
+
+        <!-- Profilinställningar toggle -->
+        <button
+          class="btn btn-outline-light btn-sm w-100 mb-3"
+          (click)="showProfilePanel = !showProfilePanel"
+        >
+          {{ showProfilePanel ? '▲ Dölj profilinställningar' : '▼ Profilinställningar' }}
+        </button>
+
+        @if (showProfilePanel) {
+          <div class="card p-3 mb-3" style="background: rgba(255, 255, 255, 0.1)">
+            <!-- Byt namn -->
+            <h6 class="text-white">Byt namn</h6>
+            <input
+              class="form-control form-control-sm mb-2"
+              [(ngModel)]="editName"
+              placeholder="Nytt användarnamn"
+            />
+            <div *ngIf="nameError" class="text-danger small mb-1">{{ nameError }}</div>
+            <div *ngIf="nameSuccess" class="text-success small mb-1">{{ nameSuccess }}</div>
+            <button
+              class="btn btn-primary btn-sm w-100 mb-3"
+              (click)="saveName()"
+              [disabled]="savingName"
+            >
+              {{ savingName ? 'Sparar…' : 'Spara namn' }}
+            </button>
+
+            <!-- Byt lösenord -->
+            <h6 class="text-white">Byt lösenord</h6>
+            <input
+              type="password"
+              class="form-control form-control-sm mb-2"
+              [(ngModel)]="oldPassword"
+              placeholder="Nuvarande lösenord"
+            />
+            <input
+              type="password"
+              class="form-control form-control-sm mb-2"
+              [(ngModel)]="newPassword"
+              placeholder="Nytt lösenord"
+            />
+            <input
+              type="password"
+              class="form-control form-control-sm mb-2"
+              [(ngModel)]="confirmPassword"
+              placeholder="Bekräfta nytt lösenord"
+            />
+            <div *ngIf="passwordError" class="text-danger small mb-1">{{ passwordError }}</div>
+            <div *ngIf="passwordSuccess" class="text-success small mb-1">{{ passwordSuccess }}</div>
+            <button
+              class="btn btn-warning btn-sm w-100"
+              (click)="savePassword()"
+              [disabled]="savingPassword"
+            >
+              {{ savingPassword ? 'Sparar…' : 'Byt lösenord' }}
+            </button>
+          </div>
+        }
+
+        <div class="mb-3" *ngIf="selectedMerchant">
+          <label class="form-label">Produktkategorier</label>
+          <div *ngFor="let category of categories" class="form-check">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              [id]="'mob-' + category.category"
+              [(ngModel)]="category.selected"
+              (change)="filterProductsByCategory(); safeDrawMarkers()"
+            />
+            <label class="form-check-label" [for]="'mob-' + category.category">{{
+              category.category
+            }}</label>
+          </div>
+        </div>
+
+        <a *ngIf="isAdmin" routerLink="/admin" class="btn btn-outline-warning w-100 mt-2"
+          >← Tillbaka till Adminpanel</a
+        >
+        <button class="btn btn-outline-light w-100 mt-2" (click)="toggleTheme()">
+          {{ isLightMode ? '🌙 Mörkt läge' : '☀️ Ljust läge' }}
+        </button>
+        <button class="btn btn-danger w-100 mt-2" (click)="logout()">Logga ut</button>
+      </div>
+    </div>
+  }
+
   <!-- Huvudlayout -->
   <div class="row">
-    <!-- Sidomeny -->
-    <div class="col-md-3">
-      <div class="card p-3 mb-3">
-        <!-- Profil -->
+    <!-- Sidomeny – döljs på mobil -->
+    <div class="col-md-3 d-none d-md-block">
+      <div class="card p-3 mb-3 dashboard-green-bg">
         <div class="text-center mb-3">
           <img
             [src]="userProfileImage"
@@ -53,9 +173,68 @@
             (change)="onProfileImageSelected($event)"
           />
           <h5>{{ userName }}</h5>
+          <small class="text-muted">Klicka på bilden för att byta</small>
         </div>
 
-        <!-- Checkboxes -->
+        <!-- Profilinställningar toggle -->
+        <button
+          class="btn btn-outline-secondary btn-sm w-100 mb-3"
+          (click)="showProfilePanel = !showProfilePanel"
+        >
+          {{ showProfilePanel ? '▲ Dölj profilinställningar' : '▼ Profilinställningar' }}
+        </button>
+
+        @if (showProfilePanel) {
+          <div class="mb-3">
+            <!-- Byt namn -->
+            <h6>Byt namn</h6>
+            <input
+              class="form-control form-control-sm mb-2"
+              [(ngModel)]="editName"
+              placeholder="Nytt användarnamn"
+            />
+            <div *ngIf="nameError" class="text-danger small mb-1">{{ nameError }}</div>
+            <div *ngIf="nameSuccess" class="text-success small mb-1">{{ nameSuccess }}</div>
+            <button
+              class="btn btn-primary btn-sm w-100 mb-3"
+              (click)="saveName()"
+              [disabled]="savingName"
+            >
+              {{ savingName ? 'Sparar…' : 'Spara namn' }}
+            </button>
+
+            <!-- Byt lösenord -->
+            <h6>Byt lösenord</h6>
+            <input
+              type="password"
+              class="form-control form-control-sm mb-2"
+              [(ngModel)]="oldPassword"
+              placeholder="Nuvarande lösenord"
+            />
+            <input
+              type="password"
+              class="form-control form-control-sm mb-2"
+              [(ngModel)]="newPassword"
+              placeholder="Nytt lösenord"
+            />
+            <input
+              type="password"
+              class="form-control form-control-sm mb-2"
+              [(ngModel)]="confirmPassword"
+              placeholder="Bekräfta nytt lösenord"
+            />
+            <div *ngIf="passwordError" class="text-danger small mb-1">{{ passwordError }}</div>
+            <div *ngIf="passwordSuccess" class="text-success small mb-1">{{ passwordSuccess }}</div>
+            <button
+              class="btn btn-warning btn-sm w-100 mb-3"
+              (click)="savePassword()"
+              [disabled]="savingPassword"
+            >
+              {{ savingPassword ? 'Sparar…' : 'Byt lösenord' }}
+            </button>
+          </div>
+        }
+
         <div class="mb-3" *ngIf="selectedMerchant">
           <label class="form-label">Produktkategorier</label>
           <div *ngFor="let category of categories" class="form-check">
@@ -72,38 +251,43 @@
           </div>
         </div>
 
-        <!-- Logout-knapp -->
-        <button class="btn btn-danger w-100 mt-3" (click)="logout()">Logga ut</button>
+        <a *ngIf="isAdmin" routerLink="/admin" class="btn btn-outline-warning w-100 mt-2"
+          >← Tillbaka till Adminpanel</a
+        >
+        <button class="btn btn-outline-secondary w-100 mt-2" (click)="toggleTheme()">
+          {{ isLightMode ? '🌙 Mörkt läge' : '☀️ Ljust läge' }}
+        </button>
+        <button class="btn btn-danger w-100 mt-2" (click)="logout()">Logga ut</button>
       </div>
     </div>
 
     <!-- Huvudinnehåll -->
-    <div class="col-md-9">
-      <div class="card p-3">
+    <div class="col-md-9 col-12">
+      <!-- Välkommen-banner – döljs på mobil och när en handlare är vald -->
+      <div *ngIf="!selectedMerchant" class="dashboard-welcome-gold p-3 mb-3 d-none d-md-block">
         <h2>Välkommen till DeliDeal!</h2>
       </div>
 
       <!-- PRODUKTOMRÅDE -->
-      <div class="card p-3">
+      <div [ngClass]="selectedMerchant ? 'p-0' : 'card p-2 dashboard-merchants-card'">
         <!-- Handlare-lista -->
         <div *ngIf="!selectedMerchant && filteredMerchants.length > 0">
-          <h5>Handlare som matchar din sökning:</h5>
-          <div class="row">
-            <div class="col-md-6 mb-3" *ngFor="let merchant of filteredMerchants">
+          <div class="row g-2 merchants-row">
+            <div class="col-md-4" *ngFor="let merchant of filteredMerchants">
               <div
-                class="card h-100 p-3 shadow-sm text-center"
+                class="card h-100 p-2 text-center dashboard-green-bg"
                 (click)="selectMerchant(merchant)"
-                style="cursor: pointer; transform: scale(1.02)"
+                style="cursor: pointer"
               >
-                <h5>{{ merchant.name }}</h5>
+                <h6 class="mb-1">{{ merchant.name }}</h6>
                 <img
                   [src]="merchant.image || 'assets/logo.png'"
                   alt="{{ merchant.name }}"
-                  class="card-img-top"
-                  style="height: 150px; object-fit: cover"
+                  class="card-img-top my-1"
+                  style="height: 80px; object-fit: cover"
                 />
-                <p class="mb-1">{{ merchant.city }}</p>
-                <p class="text-muted">{{ merchant.address }}</p>
+                <p class="mb-0 small">{{ merchant.city }}</p>
+                <p class="mb-0 small text-muted">{{ merchant.address }}</p>
                 <small class="text-muted">{{ merchant.products.length }} produkter</small>
               </div>
             </div>
@@ -126,12 +310,12 @@
             <p>{{ selectedMerchant.address }}, {{ selectedMerchant.city }}</p>
             <p>{{ selectedMerchant.productsFiltered?.length }} produkter tillgängliga:</p>
             <button class="btn btn-secondary btn-sm mb-2" (click)="selectedMerchant = null">
-              Gå tillbaka
+              ← Gå tillbaka
             </button>
 
             <div class="row">
               <div class="col-md-4 mb-3" *ngFor="let product of selectedMerchant.productsFiltered">
-                <div class="card h-100 p-3 shadow-sm text-center">
+                <div class="card h-100 p-3 text-center dashboard-green-bg">
                   <img
                     [src]="product.image || 'assets/logo.png'"
                     alt="{{ product.name }}"
@@ -147,7 +331,38 @@
                       >Erbjudande!</span
                     >
                   </p>
-                  <p class="text-muted">{{ product.category }}</p>
+                  <p class="text-muted mb-2">{{ product.category }}</p>
+
+                  <!-- Bevaka-sektion -->
+                  <ng-container *ngIf="getAlertForProduct(product.id!) as alert; else noAlert">
+                    <div class="d-flex align-items-center justify-content-center gap-1">
+                      <span class="badge bg-info text-dark">
+                        🔔 Bevakar: {{ alert.targetPrice }} kr
+                      </span>
+                      <button
+                        class="btn btn-outline-secondary btn-sm py-0"
+                        title="Ändra"
+                        (click)="openWatchModal(product)"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        class="btn btn-outline-danger btn-sm py-0"
+                        title="Ta bort bevakning"
+                        (click)="removeWatch(product.id!)"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </ng-container>
+                  <ng-template #noAlert>
+                    <button
+                      class="btn btn-outline-warning btn-sm w-100"
+                      (click)="openWatchModal(product)"
+                    >
+                      🔔 Bevaka pris
+                    </button>
+                  </ng-template>
                 </div>
               </div>
             </div>
@@ -167,3 +382,57 @@
     </div>
   </div>
 </div>
+
+<!-- Bevaka-modal -->
+@if (watchModalProduct) {
+  <div
+    class="modal-backdrop"
+    style="
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      z-index: 1050;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    "
+    (click)="closeWatchModal()"
+  >
+    <div
+      class="card p-4"
+      style="min-width: 300px; max-width: 420px; width: 90%; z-index: 1051"
+      (click)="$event.stopPropagation()"
+    >
+      <h5 class="mb-1">🔔 Bevaka pris</h5>
+      <p class="text-muted mb-3">
+        <strong>{{ watchModalProduct.name }}</strong> hos {{ selectedMerchant?.name }}<br />
+        Nuvarande pris: <strong>{{ watchModalProduct.price }} kr</strong>
+      </p>
+      <label class="form-label">Skicka mig ett mail när priset är <strong>högst</strong>:</label>
+      <div class="input-group mb-3">
+        <input
+          type="number"
+          class="form-control"
+          [(ngModel)]="watchModalPrice"
+          min="0"
+          step="1"
+          placeholder="Önskat pris"
+        />
+        <span class="input-group-text">kr</span>
+      </div>
+      <p class="text-muted small mb-3">
+        Du får ett e-postmeddelande när produkten kostar detta eller mindre.
+      </p>
+      <div class="d-flex gap-2">
+        <button
+          class="btn btn-warning flex-grow-1"
+          (click)="saveWatch()"
+          [disabled]="savingAlert || !watchModalPrice || watchModalPrice <= 0"
+        >
+          {{ savingAlert ? 'Sparar…' : '🔔 Bevaka' }}
+        </button>
+        <button class="btn btn-outline-secondary" (click)="closeWatchModal()">Avbryt</button>
+      </div>
+    </div>
+  </div>
+}

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { AuthService } from './auth.service';
 import { Observable } from 'rxjs';
 import { environment } from '../../enviroments/environment';
@@ -22,33 +22,27 @@ export class UserService {
     private auth: AuthService,
   ) {}
 
-  private getAuthHeaders(): HttpHeaders {
-    const token = this.auth.getAccessToken();
-    if (!token) throw new Error('No access token found');
-
-    return new HttpHeaders({ Authorization: `Bearer ${token}` });
-  }
-
   getMyProfile(): Observable<UserProfile> {
-    return this.http.get<UserProfile>(`${this.ACCOUNT_URL}/my-profile`, {
-      headers: this.getAuthHeaders(),
-    });
+    return this.http.get<UserProfile>(`${this.ACCOUNT_URL}/my-profile`);
   }
 
   getProfilePicture() {
-    return this.http.get<{ base64: string }>(`${this.ACCOUNT_URL}/profile-picture`, {
-      headers: this.getAuthHeaders(),
-    });
+    return this.http.get<{ base64: string }>(`${this.ACCOUNT_URL}/profile-picture`);
   }
 
   /** Skicka ren Base64-sträng */
   saveProfilePicture(base64: string): Observable<any> {
-    const payload = { base64 };
-    return this.http.put(`${this.ACCOUNT_URL}/profile-picture`, payload, {
-      headers: new HttpHeaders({
-        Authorization: `Bearer ${this.auth.getAccessToken()}`,
-        'Content-Type': 'application/json',
-      }),
+    return this.http.put(`${this.ACCOUNT_URL}/profile-picture`, { base64 });
+  }
+
+  updateName(newName: string): Observable<void> {
+    return this.http.put<void>(`${this.ACCOUNT_URL}/update-name`, { newName });
+  }
+
+  changePassword(currentPassword: string, newPassword: string): Observable<void> {
+    return this.http.put<void>(`${this.ACCOUNT_URL}/change-password`, {
+      currentPassword,
+      newPassword,
     });
   }
 

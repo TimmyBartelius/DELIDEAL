@@ -32,6 +32,11 @@ yarn-error.log
 !.vscode/mcp.json
 .history/*
 
+# Visual Studio
+.vs/
+bin/
+obj/
+
 # Miscellaneous
 /.angular/cache
 .sass-cache/

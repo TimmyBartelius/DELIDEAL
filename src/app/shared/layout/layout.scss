@@ -1,15 +1,95 @@
+.theme-toggle-btn {
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--c-text-on-dark);
+  margin-left: auto;
+  transition: color 0.2s;
+}
+
+.theme-icon svg {
+  display: block;
+}
+
+.theme-icon {
+  .icon-filled {
+    opacity: 1;
+    transition: opacity 0.25s ease;
+  }
+  .icon-outline {
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+
+  &.is-dark {
+    .icon-filled {
+      opacity: 0;
+    }
+    .icon-outline {
+      opacity: 1;
+    }
+  }
+}
+
+// ── Mörkt läge ──────────────────────────────────────────────────────
+html.dark-mode,
+body.dark-mode {
+  background-color: #163016 !important;
+}
+
+body.dark-mode .header,
+body.dark-mode .footer {
+  background-color: #213d20 !important;
+  color: #fff !important;
+}
+
+body.dark-mode .content {
+  background-color: #163016 !important;
+  color: #e4e4e4 !important;
+}
+
+body.dark-mode .dashboard-green-bg,
+body.dark-mode .dashboard-green-bg.card,
+body.dark-mode .dashboard-green-bg .card {
+  background-color: #374f36 !important;
+  color: #e4e4e4 !important;
+}
+
+body.dark-mode .dashboard-gold-bg-main {
+  background-color: #163016 !important;
+}
+
+body.dark-mode .dashboard-merchants-card {
+  background-color: #323831 !important;
+}
+
+body.dark-mode .mobile-menu-drawer {
+  background-color: #374f36 !important;
+}
+
+// ── Ljust läge ───────────────────────────────────────────────────────
+html.light-mode,
+body.light-mode {
+  background-color: var(--c-sage) !important;
+}
+
+// ── Header & footer ──────────────────────────────────────────────────
 .header {
-    height: 60px;
-    padding: 0 20px;
+  height: 60px;
+  padding: 0 20px;
 }
 
 .content {
-    padding: 20px;
+  padding: 20px;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .footer {
-    height: 60px;
+  height: 60px;
 }
-.header, .footer {
-    background-color: #41823E;
+
+.header,
+.footer {
+  background-color: var(--c-forest);
 }

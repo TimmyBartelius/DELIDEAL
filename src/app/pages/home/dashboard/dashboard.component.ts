@@ -1,9 +1,20 @@
-import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
 import { UserService } from '../../../services/user.service';
+import { StoreService } from '../../../services/store.service';
+import { UiService } from '../../../services/ui.service';
+import { PriceAlertService, PriceAlertDto } from '../../../services/price-alert.service';
 
 import { MapComponent } from '../../../shared/map/map.component';
 import { Product } from '../../../shared/models/product.model';
@@ -15,9 +26,9 @@ import { ProductCategory } from '../../../../enums/product-category.enum';
   templateUrl: `dashboard.component.html`,
   styleUrls: ['dashboard.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, MapComponent],
+  imports: [CommonModule, FormsModule, MapComponent, RouterModule],
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   @ViewChild('locationInput') locationInput!: ElementRef;
   @ViewChild('map') mapComponent!: MapComponent;
   @ViewChild('detailMap') detailMap!: MapComponent;
@@ -132,24 +143,79 @@ export class DashboardComponent implements OnInit {
   userName: string = '';
   userProfileImage: string = 'assets/logo.png';
 
+  // Profile panel
+  showProfilePanel: boolean = true;
+  editName: string = '';
+  nameError: string = '';
+  nameSuccess: string = '';
+  savingName: boolean = false;
+  oldPassword: string = '';
+  newPassword: string = '';
+  confirmPassword: string = '';
+  passwordError: string = '';
+  passwordSuccess: string = '';
+  savingPassword: boolean = false;
+
+  isLightMode: boolean = true;
+  private profileSub?: Subscription;
+
+  // Price alerts
+  priceAlerts: PriceAlertDto[] = [];
+  watchModalProduct: any = null; // product being watched
+  watchModalPrice: number | null = null;
+  savingAlert: boolean = false;
+
   allProductNames: string[] = [];
   showSuggestions: boolean = false;
+  showMobileMenu: boolean = false;
 
   constructor(
     private userService: UserService,
     private auth: AuthService,
     private router: Router,
     private cd: ChangeDetectorRef,
+    private storeService: StoreService,
+    private ui: UiService,
+    private priceAlertSvc: PriceAlertService,
   ) {}
 
   ngOnInit(): void {
+    this.isLightMode = !document.documentElement.classList.contains('dark-mode');
     this.loadCategories();
     this.filteredProducts = [];
     this.setupMerchants();
-    this.filteredMerchants = [...this.merchants];
     this.loadUserProfile();
 
     this.allProductNames = this.products.map((p) => p.name);
+
+    this.loadPriceAlerts();
+
+    this.profileSub = this.ui.profileOpen$.subscribe(() => {
+      this.showProfilePanel = true;
+      this.showMobileMenu = true;
+      this.cd.detectChanges();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.profileSub?.unsubscribe();
+  }
+
+  toggleTheme() {
+    this.isLightMode = !this.isLightMode;
+    const html = document.documentElement;
+    const body = document.body;
+    if (this.isLightMode) {
+      html.classList.remove('dark-mode');
+      html.classList.add('light-mode');
+      body.classList.remove('dark-mode');
+      body.classList.add('light-mode');
+    } else {
+      html.classList.remove('light-mode');
+      html.classList.add('dark-mode');
+      body.classList.remove('light-mode');
+      body.classList.add('dark-mode');
+    }
   }
   get filteredProductSuggestions(): string[] {
     if (!this.searchTerm) return [];
@@ -213,6 +279,46 @@ export class DashboardComponent implements OnInit {
       },
     ];
     this.merchants.forEach((m) => (m.productsFiltered = [...m.products]));
+    this.filteredMerchants = [...this.merchants];
+
+    // Hämta riktiga handlare från API och lägg till i listan
+    this.storeService.getAllStores().subscribe({
+      next: (stores) => {
+        const realMerchants: Merchant[] = stores.map((s) => ({
+          id: s.id,
+          name: s.name,
+          city: s.city || 'Sverige',
+          address: s.address,
+          image: s.logoBase64 ? `data:image/jpeg;base64,${s.logoBase64}` : 'assets/logo.png',
+          latitude: s.latitude || 57.7089,
+          longitude: s.longitude || 11.9746,
+          products: s.products.map((p) => ({
+            id: p.id,
+            name: p.name,
+            category: p.category as ProductCategory,
+            image: p.imageBase64 ? `data:image/jpeg;base64,${p.imageBase64}` : 'assets/logo.png',
+            price: p.specialOffer && p.offerPrice != null ? p.offerPrice : p.price,
+            stockLevel: (p.stockAmount > 20
+              ? 'Mycket kvar'
+              : p.stockAmount > 5
+                ? 'Mellan kvar'
+                : 'Lite kvar') as 'Lite kvar' | 'Mellan kvar' | 'Mycket kvar',
+            specialOffer: p.specialOffer,
+          })),
+        }));
+        realMerchants.forEach((m) => (m.productsFiltered = [...m.products]));
+        this.merchants = [...this.merchants, ...realMerchants];
+        this.filteredMerchants = [...this.merchants];
+        this.allProductNames = [
+          ...this.products.map((p) => p.name),
+          ...realMerchants.flatMap((m) => m.products.map((p) => p.name)),
+        ];
+        this.cd.detectChanges();
+      },
+      error: () => {
+        // Fortsätt med enbart mock-handlarna om API inte svarar
+      },
+    });
   }
 
   loadCategories() {
@@ -223,8 +329,13 @@ export class DashboardComponent implements OnInit {
   }
 
   filterMerchantsBySearch() {
+    const search = this.searchTerm.toLowerCase();
     this.filteredMerchants = this.merchants.filter((m) =>
-      m.products.some((p) => p.name.toLowerCase().includes(this.searchTerm.toLowerCase())),
+      m.products.some(
+        (p) =>
+          p.name.toLowerCase().includes(search) ||
+          (typeof p.category === 'string' && p.category.toLowerCase().includes(search)),
+      ),
     );
     if (this.mapComponent?.drawMerchantMarkers) {
       this.mapComponent.drawMerchantMarkers(this.filteredMerchants);
@@ -381,13 +492,15 @@ export class DashboardComponent implements OnInit {
   loadUserProfile() {
     this.userService.getMyProfile().subscribe({
       next: (data) => {
-        ((this.userName = data.userName), this.cd.detectChanges());
+        this.userName = data.userName;
+        this.editName = data.userName;
+        this.cd.detectChanges();
       },
       error: (err) => console.error('PROFILE ERROR', err),
     });
     this.userService.getProfilePicture().subscribe({
       next: (res) => {
-        this.userProfileImage = `data:image/png;base,${res.base64}`;
+        this.userProfileImage = `data:image/png;base64,${res.base64}`;
         this.cd.detectChanges();
       },
       error: () => {
@@ -395,9 +508,138 @@ export class DashboardComponent implements OnInit {
       },
     });
   }
+
+  saveName() {
+    this.nameError = '';
+    this.nameSuccess = '';
+    if (!this.editName.trim()) {
+      this.nameError = 'Namn får inte vara tomt.';
+      return;
+    }
+    this.savingName = true;
+    this.userService.updateName(this.editName.trim()).subscribe({
+      next: () => {
+        this.userName = this.editName.trim();
+        this.nameSuccess = 'Namn sparat!';
+        this.savingName = false;
+        this.cd.detectChanges();
+      },
+      error: (err) => {
+        this.nameError =
+          err.status === 409 ? 'Användarnamnet är redan taget.' : 'Kunde inte spara namn.';
+        this.savingName = false;
+        this.cd.detectChanges();
+      },
+    });
+  }
+
+  savePassword() {
+    this.passwordError = '';
+    this.passwordSuccess = '';
+    if (!this.oldPassword || !this.newPassword || !this.confirmPassword) {
+      this.passwordError = 'Fyll i alla lösenordsfält.';
+      return;
+    }
+    if (this.newPassword !== this.confirmPassword) {
+      this.passwordError = 'Nya lösenorden matchar inte.';
+      return;
+    }
+    if (this.newPassword.length < 6) {
+      this.passwordError = 'Lösenordet måste vara minst 6 tecken.';
+      return;
+    }
+    this.savingPassword = true;
+    this.userService.changePassword(this.oldPassword, this.newPassword).subscribe({
+      next: () => {
+        this.passwordSuccess = 'Lösenord bytt!';
+        this.oldPassword = '';
+        this.newPassword = '';
+        this.confirmPassword = '';
+        this.savingPassword = false;
+        this.cd.detectChanges();
+      },
+      error: (err) => {
+        this.passwordError =
+          err.status === 400 ? 'Nuvarande lösenord är fel.' : 'Kunde inte byta lösenord.';
+        this.savingPassword = false;
+        this.cd.detectChanges();
+      },
+    });
+  }
   logout() {
     this.auth.logout();
     this.router.navigate(['/home']);
+  }
+
+  loadPriceAlerts() {
+    this.priceAlertSvc.getAlerts().subscribe({
+      next: (alerts) => {
+        this.priceAlerts = alerts;
+        this.cd.detectChanges();
+      },
+      error: () => {},
+    });
+  }
+
+  getAlertForProduct(productId: string): PriceAlertDto | undefined {
+    return this.priceAlerts.find((a) => a.productId === productId && !a.isTriggered);
+  }
+
+  openWatchModal(product: any) {
+    this.watchModalProduct = product;
+    const existing = this.getAlertForProduct(product.id);
+    this.watchModalPrice = existing ? existing.targetPrice : product.price;
+    this.cd.detectChanges();
+  }
+
+  closeWatchModal() {
+    this.watchModalProduct = null;
+    this.watchModalPrice = null;
+    this.cd.detectChanges();
+  }
+
+  saveWatch() {
+    if (!this.watchModalProduct || !this.watchModalPrice || this.watchModalPrice <= 0) return;
+    this.savingAlert = true;
+    this.priceAlertSvc
+      .createAlert(
+        this.watchModalProduct.id,
+        this.selectedMerchant!.id as string,
+        this.watchModalProduct.name,
+        this.selectedMerchant!.name,
+        this.watchModalPrice,
+      )
+      .subscribe({
+        next: (alert) => {
+          // Replace existing or add new
+          this.priceAlerts = [
+            ...this.priceAlerts.filter((a) => a.productId !== alert.productId),
+            alert,
+          ];
+          this.savingAlert = false;
+          this.closeWatchModal();
+        },
+        error: () => {
+          this.savingAlert = false;
+          this.cd.detectChanges();
+        },
+      });
+  }
+
+  removeWatch(productId: string) {
+    const alert = this.getAlertForProduct(productId);
+    if (!alert) return;
+    this.priceAlertSvc.deleteAlert(alert.id).subscribe({
+      next: () => {
+        this.priceAlerts = this.priceAlerts.filter((a) => a.id !== alert.id);
+        this.cd.detectChanges();
+      },
+      error: () => {},
+    });
+  }
+
+  get isAdmin(): boolean {
+    return this.auth.isAdmin;
   }
   safeDrawMarkers() {
     if (this.selectedMerchant) {

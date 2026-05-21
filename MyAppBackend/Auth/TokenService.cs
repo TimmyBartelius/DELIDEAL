@@ -11,11 +11,11 @@ public class TokenService
     private readonly string secret =
         "this-is-a-very-long-super-secret-key-1234567890!";
 
-    public string GenerateAccessToken(string userId)
+    public string GenerateAccessToken(string userId, string role = "customer")
     {
 
         var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(secret));
+            Encoding.ASCII.GetBytes(secret));
 
         var creds =
             new SigningCredentials(key,
@@ -23,7 +23,8 @@ public class TokenService
 
         var claims = new[]
         {
-            new Claim("id", userId)
+            new Claim("id", userId),
+            new Claim(ClaimTypes.Role, role)
         };
 
         var token =

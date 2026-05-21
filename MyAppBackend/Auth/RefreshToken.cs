@@ -1,8 +1,16 @@
+using Google.Cloud.Firestore;
+
 namespace MyAppBackend.Auth;
 
+[FirestoreData]
 public class RefreshToken
 {
-    public string Token { get; set; }
-    public string UserId { get; set; }
+    [FirestoreProperty]
+    public required string Token { get; set; }
+
+    [FirestoreProperty]
+    public required string UserId { get; set; }
+
+    [FirestoreProperty]
     public DateTime Expires { get; set; }
 }

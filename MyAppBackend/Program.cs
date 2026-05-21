@@ -6,9 +6,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using MyAppBackend;
 using MyAppBackend.Auth;
+using MyAppBackend.Services;
 using System;
-using Microsoft.VisualBasic;
-using System.Net.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,10 +23,48 @@ builder.Services.AddCors(options =>
 });
 
 // ===== Lägg till controllers =====
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Returnera camelCase JSON (id, userName, role) så att Angular-frontend matchar
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    });
+
+// ===== Firebase / Firestore =====
+Google.Cloud.Firestore.FirestoreDb firestoreDb;
+try
+{
+    var credentialPath = Path.GetFullPath("Firebase/firebase-key.json");
+    if (!System.IO.File.Exists(credentialPath))
+        throw new Exception($"Firebase credential not found at {credentialPath}");
+
+    // Sätt miljövariabeln så att Firestore-klienten hittar nyckeln
+    Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", credentialPath);
+
+    if (FirebaseAdmin.FirebaseApp.DefaultInstance == null)
+    {
+#pragma warning disable CS0618
+        var credential = Google.Apis.Auth.OAuth2.GoogleCredential.FromFile(credentialPath);
+#pragma warning restore CS0618
+        FirebaseAdmin.FirebaseApp.Create(new FirebaseAdmin.AppOptions { Credential = credential });
+    }
+    firestoreDb = Google.Cloud.Firestore.FirestoreDb.Create("examensarbete-3cda1");
+}
+catch (Exception ex)
+{
+    Console.WriteLine("Failed to initialize Firestore: " + ex.Message);
+    throw;
+}
+builder.Services.AddSingleton(firestoreDb);
 
 // ===== Lägg till vår "databas"/tjänster =====
 builder.Services.AddSingleton<IUserProfileService, UserProfileService>();
+builder.Services.AddSingleton<MerchantService>();
+builder.Services.AddSingleton<ProductService>();
+builder.Services.AddSingleton<OfferService>();
+builder.Services.AddSingleton<FavoriteService>();
+builder.Services.AddSingleton<PriceAlertService>();
+builder.Services.AddSingleton<IEmailService, EmailService>();
 
 // ===== JWT-konfiguration =====
 var key = Encoding.ASCII.GetBytes("this-is-a-very-long-super-secret-key-1234567890!"); 

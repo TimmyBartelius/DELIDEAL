@@ -3,7 +3,14 @@
     <div class="card shadow p-4" style="max-width: 400px; width: 100%">
       <h2 class="text-center mb-4">Skapa konto</h2>
 
-      <!-- Felmeddelande -->
+      <!-- Loader/Spinner -->
+      <div *ngIf="isLoading" class="d-flex justify-content-center my-3">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Laddar...</span>
+        </div>
+      </div>
+
+      <!-- Felmeddelande/Bekräftelse -->
       <div *ngIf="errorMessage" class="alert alert-info" [innerHTML]="errorMessage"></div>
 
       <form [formGroup]="registerForm" (ngSubmit)="register()">
@@ -54,10 +61,21 @@
             placeholder="Lösenord"
           />
           <div
-            *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.invalid"
+            *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.errors"
             class="text-danger small mt-1"
           >
-            Lösenord krävs
+            <ng-container *ngIf="registerForm.get('password')?.errors?.['required']">
+              Lösenord krävs
+            </ng-container>
+            <ng-container *ngIf="registerForm.get('password')?.errors?.['minlength']">
+              Lösenordet måste vara minst 8 tecken långt
+            </ng-container>
+            <ng-container *ngIf="registerForm.get('password')?.errors?.['letter']">
+              Lösenordet måste innehålla minst en bokstav
+            </ng-container>
+            <ng-container *ngIf="registerForm.get('password')?.errors?.['digit']">
+              Lösenordet måste innehålla minst en siffra
+            </ng-container>
           </div>
         </div>
 

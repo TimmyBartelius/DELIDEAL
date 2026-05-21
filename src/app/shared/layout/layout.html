@@ -1,16 +1,46 @@
 <body class="d-flex flex-column min-vh-100">
-
-  <header class="d-flex align-items-center justify-content-start border-bottom header">
-      <img src="assets/logo.png" height="40" class="me-2">
+  <header class="d-flex align-items-center justify-content-between border-bottom header">
+    <div class="d-flex align-items-center">
+      <img src="assets/logo.png" height="40" class="me-2" />
       <span class="text-white fw-bold">DELIDEAL</span>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <button
+        *ngIf="auth.isLoggedIn"
+        class="btn btn-sm btn-outline-light"
+        (click)="openProfile()"
+        aria-label="Min profil"
+      >
+        Min profil
+      </button>
+      <button
+        class="btn btn-link p-0 theme-toggle-btn"
+        (click)="toggleTheme()"
+        aria-label="Toggle dark/light mode"
+      >
+        <span class="theme-icon" [class.is-dark]="!isLightMode">
+          <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24">
+            <circle class="icon-filled" cx="12" cy="12" r="7" fill="currentColor" />
+            <circle
+              class="icon-outline"
+              cx="12"
+              cy="12"
+              r="7"
+              stroke="currentColor"
+              stroke-width="2.5"
+              fill="none"
+            />
+          </svg>
+        </span>
+      </button>
+    </div>
   </header>
 
   <main class="flex-grow-1 content">
-      <router-outlet></router-outlet>
+    <router-outlet></router-outlet>
   </main>
 
   <footer class="d-flex align-items-center justify-content-center border-top footer text-white">
-      Copyright © 2026 Delideal AB
+    Copyright © 2026 Delideal AB
   </footer>
-
 </body>

@@ -18,5 +18,13 @@ public class UserProfile
         public string Email { get; set; } = "";
         [FirestoreProperty]
         public string? Password { get; set; }
+        [FirestoreProperty]
+        public string Role { get; set; } = "customer";
+        [FirestoreProperty]
+        public bool AllowMarketing { get; set; } = false;
+        [FirestoreProperty]
+        public string? PasswordChangeToken { get; set; }
+        [FirestoreProperty]
+        public DateTime? PasswordChangeTokenExpires { get; set; }
     }
 }
