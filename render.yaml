@@ -20,7 +20,7 @@ services:
     name: delideal-frontend
     rootDir: .
     buildCommand: npm ci && npm run build -- --configuration production
-    staticPublishPath: dist/myapp-frontend/browser
+    staticPublishPath: dist/myapp-frontend
     envVars:
       - key: NODE_VERSION
         value: '20'
