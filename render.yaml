@@ -1,0 +1,31 @@
+services:
+  # ─── .NET Backend ───────────────────────────────────────────────────────────
+  - type: web
+    name: delideal-backend
+    runtime: dotnet
+    rootDir: MyAppBackend
+    buildCommand: dotnet publish -c Release -o out
+    startCommand: dotnet out/MyAppBackend.dll
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: JwtSecret
+        sync: false # Sätt manuellt i Render-dashboarden
+      - key: AllowedOrigins
+        sync: false # Sätt till din frontend-URL, t.ex. https://delideal-frontend.onrender.com
+      - key: GOOGLE_CREDENTIALS_JSON
+        sync: false # Klistra in hela innehållet från Firebase/firebase-key.json
+
+  # ─── Angular Frontend (Static Site) ────────────────────────────────────────
+  - type: static
+    name: delideal-frontend
+    rootDir: .
+    buildCommand: npm ci && npm run build -- --configuration production
+    staticPublishPath: dist/myapp-frontend/browser
+    envVars:
+      - key: NODE_VERSION
+        value: '20'
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

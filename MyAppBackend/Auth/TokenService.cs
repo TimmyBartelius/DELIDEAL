@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -7,9 +8,13 @@ namespace MyAppBackend.Auth;
 
 public class TokenService
 {
+    private readonly string secret;
 
-    private readonly string secret =
-        "this-is-a-very-long-super-secret-key-1234567890!";
+    public TokenService(IConfiguration configuration)
+    {
+        secret = configuration["JwtSecret"]
+            ?? throw new InvalidOperationException("JwtSecret is not configured.");
+    }
 
     public string GenerateAccessToken(string userId, string role = "customer")
     {

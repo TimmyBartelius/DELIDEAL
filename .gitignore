@@ -47,9 +47,6 @@ testem.log
 /typings
 __screenshots__/
 .env
-**/enviroments
-**/enviroment.prod.ts
-**/environment.ts
 **/secret.ts
 **/firebase-key.json
 

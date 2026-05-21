@@ -16,7 +16,9 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:4200")
+        var origins = (builder.Configuration["AllowedOrigins"] ?? "http://localhost:4200")
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        policy.WithOrigins(origins)
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -34,11 +36,22 @@ builder.Services.AddControllers()
 Google.Cloud.Firestore.FirestoreDb firestoreDb;
 try
 {
-    var credentialPath = Path.GetFullPath("Firebase/firebase-key.json");
-    if (!System.IO.File.Exists(credentialPath))
-        throw new Exception($"Firebase credential not found at {credentialPath}");
+    // Produktionsmiljö (Render): Firebase-nyckeln läses från miljövariabeln GOOGLE_CREDENTIALS_JSON
+    // Lokalt: läses från Firebase/firebase-key.json
+    var credentialsJson = Environment.GetEnvironmentVariable("GOOGLE_CREDENTIALS_JSON");
+    string credentialPath;
+    if (!string.IsNullOrEmpty(credentialsJson))
+    {
+        credentialPath = Path.Combine(Path.GetTempPath(), "firebase-key.json");
+        File.WriteAllText(credentialPath, credentialsJson);
+    }
+    else
+    {
+        credentialPath = Path.GetFullPath("Firebase/firebase-key.json");
+        if (!File.Exists(credentialPath))
+            throw new Exception($"Firebase credential not found at {credentialPath}");
+    }
 
-    // Sätt miljövariabeln så att Firestore-klienten hittar nyckeln
     Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", credentialPath);
 
     if (FirebaseAdmin.FirebaseApp.DefaultInstance == null)
@@ -67,7 +80,10 @@ builder.Services.AddSingleton<PriceAlertService>();
 builder.Services.AddSingleton<IEmailService, EmailService>();
 
 // ===== JWT-konfiguration =====
-var key = Encoding.ASCII.GetBytes("this-is-a-very-long-super-secret-key-1234567890!"); 
+var jwtSecret = builder.Configuration["JwtSecret"];
+if (string.IsNullOrEmpty(jwtSecret))
+    throw new InvalidOperationException("JwtSecret is not configured. Set it in appsettings or as an environment variable.");
+var key = Encoding.ASCII.GetBytes(jwtSecret);
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -88,6 +104,11 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddSingleton<TokenService>();
 
 builder.Services.AddAuthorization();
+
+// Render sätter PORT-miljövariabeln automatiskt för web services
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrEmpty(port))
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 var app = builder.Build();
 
