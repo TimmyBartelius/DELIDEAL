@@ -2,13 +2,13 @@
 export const environment = {
   production: true,
   application: {
-    baseUrl: 'https://delideal-frontend.onrender.com',
+    baseUrl: 'https://delideal-frontend.onrender.com', // uppdatera när frontend-servicen är skapad
     name: 'MyApp',
     logoUrl: '',
   },
   apis: {
     default: {
-      url: 'https://delideal-backend.onrender.com',
+      url: 'https://delideal.onrender.com',
       rootNamespace: 'MyApp',
     },
   },
