@@ -2,7 +2,7 @@
 export const environment = {
   production: true,
   application: {
-    baseUrl: 'https://delideal-frontend.onrender.com', // uppdatera när frontend-servicen är skapad
+    baseUrl: 'https://delideal.vercel.app', // uppdatera när frontend-servicen är skapad
     name: 'MyApp',
     logoUrl: '',
   },
