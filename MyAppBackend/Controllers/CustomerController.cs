@@ -65,8 +65,10 @@ namespace MyAppBackend.Controllers
             {
                 UserId = UserId,
                 ProductId = dto.ProductId,
-                TargetPrice = dto.TargetPrice,
-                NotifyVia = dto.NotifyVia ?? "email"
+                MerchantId = dto.MerchantId,
+                ProductName = dto.ProductName,
+                MerchantName = dto.MerchantName,
+                TargetPrice = dto.TargetPrice
             };
             return Ok(await _priceAlertService.CreateAsync(alert));
         }
@@ -139,8 +141,10 @@ namespace MyAppBackend.Controllers
     public class CreatePriceAlertDto
     {
         public string ProductId { get; set; } = "";
-        public decimal TargetPrice { get; set; }
-        public string? NotifyVia { get; set; }
+        public string MerchantId { get; set; } = "";
+        public string ProductName { get; set; } = "";
+        public string MerchantName { get; set; } = "";
+        public double TargetPrice { get; set; }
     }
 
     public class UpdateProfileDto

@@ -21,7 +21,7 @@ export class ResellerDashboardComponent implements OnInit {
 
   // ── Butiksprofil ─────────────────────────────────────────────────
   store: MerchantApi | null = null;
-  storeForm = { name: '', address: '', phone: '' };
+  storeForm = { name: '', address: '', phone: '', city: '', latitude: 57.7089, longitude: 11.9746 };
   storeImagePreview = '';
   storeImageB64 = '';
   savingStore = false;
@@ -84,7 +84,14 @@ export class ResellerDashboardComponent implements OnInit {
     this.portalService.getMyStore().subscribe({
       next: (store) => {
         this.store = store;
-        this.storeForm = { name: store.name, address: store.address, phone: store.phone };
+        this.storeForm = {
+          name: store.name,
+          address: store.address,
+          phone: store.phone,
+          city: store.city ?? '',
+          latitude: store.latitude ?? 57.7089,
+          longitude: store.longitude ?? 11.9746,
+        };
         this.storeImagePreview = store.logoBase64
           ? `data:image/jpeg;base64,${store.logoBase64}`
           : '';
@@ -145,6 +152,9 @@ export class ResellerDashboardComponent implements OnInit {
       Name: this.storeForm.name,
       Address: this.storeForm.address,
       Phone: this.storeForm.phone,
+      City: this.storeForm.city,
+      Latitude: this.storeForm.latitude,
+      Longitude: this.storeForm.longitude,
     };
     if (this.storeImageB64) fields['LogoBase64'] = this.storeImageB64;
 

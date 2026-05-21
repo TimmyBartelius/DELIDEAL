@@ -98,6 +98,42 @@
               placeholder="070-000 00 00"
             />
           </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Stad</label>
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="storeForm.city"
+              placeholder="t.ex. Göteborg"
+            />
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col">
+              <label class="form-label fw-semibold">Latitud</label>
+              <input
+                type="number"
+                step="0.0001"
+                class="form-control"
+                [(ngModel)]="storeForm.latitude"
+                placeholder="57.7089"
+              />
+            </div>
+            <div class="col">
+              <label class="form-label fw-semibold">Longitud</label>
+              <input
+                type="number"
+                step="0.0001"
+                class="form-control"
+                [(ngModel)]="storeForm.longitude"
+                placeholder="11.9746"
+              />
+            </div>
+          </div>
+          <small class="text-muted d-block mb-3">
+            Koordinaterna används för att visa butiken på kartan. Sök på
+            <a href="https://www.latlong.net" target="_blank">latlong.net</a>
+            för att hitta din butiks koordinater.
+          </small>
           <div class="d-flex align-items-center gap-3">
             <button class="btn btn-success" (click)="saveStore()" [disabled]="savingStore">
               <span *ngIf="savingStore" class="spinner-border spinner-border-sm me-1"></span>

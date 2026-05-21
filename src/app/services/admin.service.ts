@@ -19,6 +19,9 @@ export interface CreateMerchantAccountDto {
   storeName: string;
   storeAddress: string;
   storePhone: string;
+  storeCity: string;
+  storeLatitude: number;
+  storeLongitude: number;
 }
 
 @Injectable({ providedIn: 'root' })

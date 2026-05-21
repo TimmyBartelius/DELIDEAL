@@ -37,6 +37,9 @@ export class AdminDashboardComponent implements OnInit {
     storeName: '',
     storeAddress: '',
     storePhone: '',
+    storeCity: '',
+    storeLatitude: 57.7089,
+    storeLongitude: 11.9746,
   };
   creating = false;
   createError: string | null = null;
@@ -181,6 +184,9 @@ export class AdminDashboardComponent implements OnInit {
           storeName: '',
           storeAddress: '',
           storePhone: '',
+          storeCity: '',
+          storeLatitude: 57.7089,
+          storeLongitude: 11.9746,
         };
         this.createSuccess = `Kontot för "${res.user?.userName ?? 'ny merchant'}" skapades!`;
         this.cd.detectChanges();

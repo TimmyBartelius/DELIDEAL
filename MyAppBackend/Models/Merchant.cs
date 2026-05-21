@@ -30,6 +30,15 @@ namespace MyAppBackend.Models
         public bool IsActive { get; set; } = true;
 
         [FirestoreProperty]
+        public string City { get; set; } = "";
+
+        [FirestoreProperty]
+        public double Latitude { get; set; } = 57.7089;
+
+        [FirestoreProperty]
+        public double Longitude { get; set; } = 11.9746;
+
+        [FirestoreProperty]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

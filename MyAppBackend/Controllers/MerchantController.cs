@@ -14,12 +14,20 @@ namespace MyAppBackend.Controllers
         private readonly MerchantService _merchantService;
         private readonly ProductService _productService;
         private readonly OfferService _offerService;
+        private readonly PriceAlertService _priceAlertService;
+        private readonly IEmailService _emailService;
+        private readonly IUserProfileService _userService;
 
-        public MerchantController(MerchantService merchantService, ProductService productService, OfferService offerService)
+        public MerchantController(MerchantService merchantService, ProductService productService,
+            OfferService offerService, PriceAlertService priceAlertService,
+            IEmailService emailService, IUserProfileService userService)
         {
             _merchantService = merchantService;
             _productService = productService;
             _offerService = offerService;
+            _priceAlertService = priceAlertService;
+            _emailService = emailService;
+            _userService = userService;
         }
 
         private string? UserId => ClaimsHelper.GetUserId(User);
@@ -85,6 +93,20 @@ namespace MyAppBackend.Controllers
             var auth = await AuthorizeMerchantAsync(merchantId);
             if (auth != null) return auth;
             await _productService.UpdateAsync(productId, fields);
+
+            // Check price alerts if price was updated
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    var product = await _productService.GetByIdAsync(productId);
+                    var merchant = await _merchantService.GetByIdAsync(merchantId);
+                    if (product != null && merchant != null)
+                        await _priceAlertService.CheckAndTriggerAsync(productId, product.Price, product.Name, merchant.Name, _emailService, _userService);
+                }
+                catch (Exception ex) { Console.WriteLine("[ALERT CHECK ERROR] " + ex.Message); }
+            });
+
             return NoContent();
         }
 
@@ -128,6 +150,19 @@ namespace MyAppBackend.Controllers
             };
 
             var created = await _offerService.CreateAsync(offer, product.Price);
+
+            // Trigger price alerts for the offer price
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    var merchant = await _merchantService.GetByIdAsync(merchantId);
+                    if (merchant != null)
+                        await _priceAlertService.CheckAndTriggerAsync(dto.ProductId, created.OfferPrice, product.Name, merchant.Name, _emailService, _userService);
+                }
+                catch (Exception ex) { Console.WriteLine("[ALERT CHECK ERROR] " + ex.Message); }
+            });
+
             return CreatedAtAction(nameof(GetOffers), new { merchantId }, created);
         }
 

@@ -1,15 +1,23 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { AuthService } from '../../services/auth.service';
+import { UiService } from '../../services/ui.service';
 
 @Component({
   selector: 'app-layout',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, CommonModule],
   templateUrl: './layout.html',
   styleUrls: ['./layout.scss'],
   standalone: true,
 })
 export class LayoutComponent {
   isLightMode = true;
+
+  constructor(
+    public auth: AuthService,
+    private ui: UiService,
+  ) {}
 
   ngOnInit() {
     const isDark = document.documentElement.classList.contains('dark-mode');
@@ -35,5 +43,9 @@ export class LayoutComponent {
       body.classList.remove('light-mode');
       body.classList.add('dark-mode');
     }
+  }
+
+  openProfile() {
+    this.ui.openProfile();
   }
 }

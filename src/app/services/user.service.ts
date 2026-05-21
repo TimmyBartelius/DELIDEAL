@@ -35,6 +35,17 @@ export class UserService {
     return this.http.put(`${this.ACCOUNT_URL}/profile-picture`, { base64 });
   }
 
+  updateName(newName: string): Observable<void> {
+    return this.http.put<void>(`${this.ACCOUNT_URL}/update-name`, { newName });
+  }
+
+  changePassword(currentPassword: string, newPassword: string): Observable<void> {
+    return this.http.put<void>(`${this.ACCOUNT_URL}/change-password`, {
+      currentPassword,
+      newPassword,
+    });
+  }
+
   register(data: { userName: string; email: string; password: string }): Observable<UserProfile> {
     return this.http.post<UserProfile>(`${this.ACCOUNT_URL}/register`, {
       userName: data.userName,

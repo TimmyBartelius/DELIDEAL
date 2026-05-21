@@ -64,6 +64,7 @@ builder.Services.AddSingleton<ProductService>();
 builder.Services.AddSingleton<OfferService>();
 builder.Services.AddSingleton<FavoriteService>();
 builder.Services.AddSingleton<PriceAlertService>();
+builder.Services.AddSingleton<IEmailService, EmailService>();
 
 // ===== JWT-konfiguration =====
 var key = Encoding.ASCII.GetBytes("this-is-a-very-long-super-secret-key-1234567890!"); 

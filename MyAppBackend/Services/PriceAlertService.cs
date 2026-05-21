@@ -22,7 +22,7 @@ namespace MyAppBackend.Services
         {
             alert.Id = Guid.NewGuid().ToString();
             alert.IsTriggered = false;
-            alert.CreatedAt = DateTime.UtcNow;
+            alert.CreatedAt = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Utc);
             await _firestore.Collection("priceAlerts").Document(alert.Id).SetAsync(alert);
             return alert;
         }
@@ -32,8 +32,7 @@ namespace MyAppBackend.Services
             await _firestore.Collection("priceAlerts").Document(id).DeleteAsync();
         }
 
-        // Körs för att kontrollera om ett pris nått en användares bevakningspris
-        public async Task<List<PriceAlert>> GetUntriggeredForProductAsync(string productId, decimal currentPrice)
+        public async Task<List<PriceAlert>> GetUntriggeredForProductAsync(string productId, double currentPrice)
         {
             var snapshot = await _firestore.Collection("priceAlerts")
                 .WhereEqualTo("ProductId", productId)
@@ -50,6 +49,37 @@ namespace MyAppBackend.Services
         {
             await _firestore.Collection("priceAlerts").Document(id).UpdateAsync(
                 new Dictionary<string, object> { { "IsTriggered", true } });
+        }
+
+        /// <summary>
+        /// Checks all untriggered alerts for a product at the given effective price,
+        /// sends email notifications, and marks them as triggered.
+        /// </summary>
+        public async Task CheckAndTriggerAsync(
+            string productId,
+            double effectivePrice,
+            string productName,
+            string merchantName,
+            IEmailService emailService,
+            IUserProfileService userService)
+        {
+            var alerts = await GetUntriggeredForProductAsync(productId, effectivePrice);
+            foreach (var alert in alerts)
+            {
+                var user = await userService.GetProfile(alert.UserId);
+                if (user != null && !string.IsNullOrWhiteSpace(user.Email))
+                {
+                    try
+                    {
+                        await emailService.SendPriceAlertAsync(user.Email, productName, merchantName, alert.TargetPrice, effectivePrice);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[EMAIL ERROR] Failed to send alert to {user.Email}: {ex.Message}");
+                    }
+                }
+                await MarkAsTriggeredAsync(alert.Id);
+            }
         }
     }
 }

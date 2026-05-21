@@ -1,7 +1,7 @@
 import { Product } from './product.model';
 
 export interface Merchant {
-  id: number;
+  id: number | string;
   name: string;
   city: string;
   address: string;

@@ -4,10 +4,13 @@ export interface MerchantApi {
   email: string;
   phone: string;
   address: string;
+  city: string;
   logoBase64: string;
   ownerId: string;
   isActive: boolean;
   createdAt: string;
+  latitude: number;
+  longitude: number;
 }
 
 export interface ProductApi {

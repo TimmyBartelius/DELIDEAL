@@ -66,5 +66,52 @@ namespace MyAppBackend.Controllers
         {
             return Ok(await _merchantService.GetAllAsync());
         }
+
+        // GET api/products/stores – alla aktiva butiker med produkter (för kundsidan, ingen auth)
+        [HttpGet("stores")]
+        public async Task<IActionResult> GetAllStores()
+        {
+            var merchants = (await _merchantService.GetAllAsync()).Where(m => m.IsActive).ToList();
+            var result = new List<object>();
+
+            foreach (var m in merchants)
+            {
+                var products = await _productService.GetByMerchantAsync(m.Id);
+                var productList = new List<object>();
+
+                foreach (var p in products.Where(p => p.IsAvailable))
+                {
+                    var offers = await _offerService.GetActiveByProductAsync(p.Id);
+                    var bestOffer = offers.OrderByDescending(o => o.DiscountPercent).FirstOrDefault();
+                    productList.Add(new
+                    {
+                        id = p.Id,
+                        name = p.Name,
+                        category = p.Category,
+                        imageBase64 = p.ImageBase64,
+                        price = p.Price,
+                        unit = p.Unit,
+                        stockAmount = p.StockAmount,
+                        specialOffer = bestOffer != null,
+                        offerPrice = bestOffer?.OfferPrice
+                    });
+                }
+
+                result.Add(new
+                {
+                    id = m.Id,
+                    name = m.Name,
+                    city = m.City,
+                    address = m.Address,
+                    phone = m.Phone,
+                    logoBase64 = m.LogoBase64,
+                    latitude = m.Latitude,
+                    longitude = m.Longitude,
+                    products = productList
+                });
+            }
+
+            return Ok(result);
+        }
     }
 }

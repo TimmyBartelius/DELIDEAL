@@ -203,7 +203,7 @@ namespace MyAppBackend
             {
                 { "Password", hashed },
                 { "PasswordChangeToken", "" },
-                { "PasswordChangeTokenExpires", DateTime.MinValue }
+                { "PasswordChangeTokenExpires", DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc) }
             });
         }
     }

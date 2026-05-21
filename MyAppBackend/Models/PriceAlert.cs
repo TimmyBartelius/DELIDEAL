@@ -15,16 +15,21 @@ namespace MyAppBackend.Models
         public string ProductId { get; set; } = "";
 
         [FirestoreProperty]
-        public decimal TargetPrice { get; set; }
+        public string MerchantId { get; set; } = "";
 
-        // "email" eller "sms"
         [FirestoreProperty]
-        public string NotifyVia { get; set; } = "email";
+        public string ProductName { get; set; } = "";
+
+        [FirestoreProperty]
+        public string MerchantName { get; set; } = "";
+
+        [FirestoreProperty]
+        public double TargetPrice { get; set; }
 
         [FirestoreProperty]
         public bool IsTriggered { get; set; } = false;
 
         [FirestoreProperty]
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Utc);
     }
 }

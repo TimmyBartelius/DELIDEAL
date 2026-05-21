@@ -130,6 +130,9 @@ namespace MyAppBackend.Controllers
                     Email = dto.Email,
                     OwnerId = user.Id,
                     IsActive = true,
+                    City = dto.StoreCity,
+                    Latitude = dto.StoreLatitude,
+                    Longitude = dto.StoreLongitude,
                 };
                 var createdMerchant = await _merchantService.CreateAsync(merchant);
 
@@ -158,5 +161,8 @@ namespace MyAppBackend.Controllers
         public string StoreName { get; set; } = "";
         public string StoreAddress { get; set; } = "";
         public string StorePhone { get; set; } = "";
+        public string StoreCity { get; set; } = "";
+        public double StoreLatitude { get; set; } = 57.7089;
+        public double StoreLongitude { get; set; } = 11.9746;
     }
 }

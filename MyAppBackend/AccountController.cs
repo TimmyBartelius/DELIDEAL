@@ -72,10 +72,62 @@ namespace MyAppBackend.Controllers
             }
 
         }
+
+        // PUT api/account/update-name
+        [HttpPut("update-name")]
+        public async Task<IActionResult> UpdateName([FromBody] UpdateNameDto dto)
+        {
+            var userId = User.FindFirst("id")?.Value;
+            if (userId == null) return Unauthorized();
+
+            if (string.IsNullOrWhiteSpace(dto.NewName))
+                return BadRequest("Name cannot be empty.");
+
+            var taken = await _service.IsUserNameTakenAsync(dto.NewName, userId);
+            if (taken) return Conflict("Username is already taken.");
+
+            await _service.UpdateUserAsync(userId, new Dictionary<string, object>
+            {
+                { "UserName", dto.NewName }
+            });
+
+            return NoContent();
+        }
+
+        // PUT api/account/change-password
+        [HttpPut("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+        {
+            var userId = User.FindFirst("id")?.Value;
+            if (userId == null) return Unauthorized();
+
+            if (string.IsNullOrWhiteSpace(dto.CurrentPassword) || string.IsNullOrWhiteSpace(dto.NewPassword))
+                return BadRequest("Passwords cannot be empty.");
+
+            var profile = await _service.GetProfile(userId);
+            if (profile == null) return NotFound();
+
+            var verified = await _service.ValidateUser(profile.Email!, dto.CurrentPassword);
+            if (verified == null) return BadRequest("Current password is incorrect.");
+
+            await _service.ChangePasswordAsync(userId, dto.NewPassword);
+            return NoContent();
+        }
     }
 
     public class ProfilePictureDto
     {
         public string Base64 { get; set; } = "";
+    }
+
+    public class UpdateNameDto
+    {
+        public string NewName { get; set; } = "";
+    }
+
+    public class ChangePasswordDto
+    {
+        public string CurrentPassword { get; set; } = "";
+        public string NewPassword { get; set; } = "";
     }
 }
