@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\timmy.bartelius\\Desktop\\training\\DELIDEAL\\MyAppBackend\\MyAppBackend.csproj": {}
+    "C:\\Users\\Tipan\\Desktop\\HTML\\Examensarbete\\Angular\\myapp-frontend\\MyAppBackend\\MyAppBackend.csproj": {}
   },
   "projects": {
-    "C:\\Users\\timmy.bartelius\\Desktop\\training\\DELIDEAL\\MyAppBackend\\MyAppBackend.csproj": {
+    "C:\\Users\\Tipan\\Desktop\\HTML\\Examensarbete\\Angular\\myapp-frontend\\MyAppBackend\\MyAppBackend.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\timmy.bartelius\\Desktop\\training\\DELIDEAL\\MyAppBackend\\MyAppBackend.csproj",
+        "projectUniqueName": "C:\\Users\\Tipan\\Desktop\\HTML\\Examensarbete\\Angular\\myapp-frontend\\MyAppBackend\\MyAppBackend.csproj",
         "projectName": "MyAppBackend",
-        "projectPath": "C:\\Users\\timmy.bartelius\\Desktop\\training\\DELIDEAL\\MyAppBackend\\MyAppBackend.csproj",
-        "packagesPath": "C:\\Users\\timmy.bartelius\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\timmy.bartelius\\Desktop\\training\\DELIDEAL\\MyAppBackend\\obj\\",
+        "projectPath": "C:\\Users\\Tipan\\Desktop\\HTML\\Examensarbete\\Angular\\myapp-frontend\\MyAppBackend\\MyAppBackend.csproj",
+        "packagesPath": "C:\\Users\\Tipan\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Tipan\\Desktop\\HTML\\Examensarbete\\Angular\\myapp-frontend\\MyAppBackend\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\timmy.bartelius\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\Tipan\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -46,7 +46,7 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.300"
+        "SdkAnalysisLevel": "10.0.400"
       },
       "frameworks": {
         "net10.0": {
@@ -101,7 +101,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.300/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.403/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.AspNetCore": "(,10.0.32767]",
             "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",
